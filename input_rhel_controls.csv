@@ -1,0 +1,1124 @@
+﻿category,title,description,rationale,impact,recommendation
+Filesystem Permissions,1.1.1.1 Ensure mounting of cramfs filesystems is disabled - lsmod,The 'cramfs' filesystem type is a compressed read-only Linux filesystem embedded in small footprint systems. A 'cramfs' image can be used without having to first decompress the image.,"Removing support for unneeded filesystem types reduces the local attack surface of the server. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install cramfs /bin/true
+
+Run the following command to unload the 'cramfs' module:
+
+# rmmod cramfs"
+Filesystem Permissions,1.1.1.2 Ensure mounting of freevxfs filesystems is disabled - lsmod,The 'freevxfs' filesystem type is a free version of the Veritas type filesystem. This is the primary filesystem type for HP-UX operating systems.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install freevxfs /bin/true
+
+Run the following command to unload the 'freevxfs' module:
+
+# rmmod freevxfs"
+Filesystem Permissions,1.1.1.3 Ensure mounting of jffs2 filesystems is disabled - lsmod,The 'jffs2' (journaling flash filesystem 2) filesystem type is a log-structured filesystem used in flash memory devices.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install jffs2 /bin/true
+
+Run the following command to unload the 'jffs2' module:
+
+# rmmod jffs2"
+Filesystem Permissions,1.1.1.4 Ensure mounting of hfs filesystems is disabled - lsmod,The 'hfs' filesystem type is a hierarchical filesystem that allows you to mount Mac OS filesystems.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install hfs /bin/true
+
+Run the following command to unload the 'hfs' module:
+
+# rmmod hfs"
+Filesystem Permissions,1.1.1.5 Ensure mounting of hfsplus filesystems is disabled - lsmod,The 'hfsplus' filesystem type is a hierarchical filesystem designed to replace 'hfs' that allows you to mount Mac OS filesystems.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install hfsplus /bin/true
+
+Run the following command to unload the 'hfsplus' module:
+
+# rmmod hfsplus"
+Filesystem Permissions,1.1.1.6 Ensure mounting of squashfs filesystems is disabled - modprobe,The 'squashfs' filesystem type is a compressed read-only Linux filesystem embedded in small footprint systems (similar to 'cramfs' ). A 'squashfs' image can be used without having to first decompress the image.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install squashfs /bin/true
+
+Run the following command to unload the 'squashfs' module:
+
+# rmmod squashfs"
+Filesystem Permissions,1.1.1.7 Ensure mounting of udf filesystems is disabled - lsmod,The 'udf' filesystem type is the universal disk format used to implement ISO/IEC 13346 and ECMA-167 specifications. This is an open vendor filesystem type for data storage on a broad range of media. This filesystem type is necessary to support writing DVDs and newer optical disc formats.,"Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install udf /bin/true
+
+Run the following command to unload the 'udf' module:
+
+# rmmod udf"
+Filesystem Permissions,1.1.1.8 Ensure mounting of FAT filesystems is disabled,"The 'FAT' filesystem format is primarily used on older windows systems and portable USB drives or flash modules. It comes in three types 'FAT12' , 'FAT16' , and 'FAT32' all of which are supported by the 'vfat' kernel module.","Removing support for unneeded filesystem types reduces the local attack surface of the system. If this filesystem type is not needed, disable it.","FAT filesystems are often used on portable USB sticks and other flash media are commonly used to transfer files between workstations, removing VFAT support may prevent the ability to transfer files in this way.
+
+Disabling the vfat module can prevent boot on UEFI systems.","Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install vfat /bin/true
+
+Run the following command to unload the 'vfat' module:
+
+# rmmod vfat"
+Filesystem Permissions,1.1.2 Ensure separate partition exists for /tmp,The '/tmp' directory is a world-writable directory used for temporary storage by all users and some applications.,"Since the '/tmp' directory is intended to be world-writable, there is a risk of resource exhaustion if it is not bound to a separate partition. In addition, making '/tmp' its own file system allows an administrator to set the 'noexec' option on the mount, making '/tmp' useless for an attacker to install executable code. It would also prevent an attacker from establishing a hardlink to a system 'setuid' program and wait for it to be updated. Once the program was updated, the hardlink would be broken and the attacker would have his own copy of the program. If the program happened to have a security vulnerability, the attacker could continue to exploit the known flaw.","Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/tmp' .
+
+For systems that were previously installed, create a new partition for '/tmp' if not using 'tmpfs' .
+
+Run the following commands to enable systemd '/tmp' mounting:
+
+systemctl unmask tmp.mount systemctl enable tmp.mount
+
+Edit '/etc/systemd/system/local-fs.target.wants/tmp.mount' to configure the '/tmp' mount:
+
+[Mount] What=tmpfs Where=/tmp Type=tmpfs Options=mode=1777,strictatime,noexec,nodev,nosuid"
+Filesystem Permissions,1.1.3 Ensure nodev option set on /tmp partition,The 'nodev' mount option specifies that the filesystem cannot contain special devices.,"Since the '/tmp' filesystem is not intended to support devices, set this option to ensure that users cannot attempt to create block or character special devices in '/tmp' .",,"Edit '/etc/systemd/system/local-fs.target.wants/tmp.mount' to add 'nodev' to the '/tmp' mount options:
+
+[Mount]
+Options=mode=1777,strictatime,noexec,nodev,nosuid
+
+Run the following command to remount '/tmp' :
+
+# mount -o remount,nodev /tmp"
+Filesystem Permissions,1.1.4 Ensure nosuid option set on /tmp partition,The 'nosuid' mount option specifies that the filesystem cannot contain 'setuid' files.,"Since the '/tmp' filesystem is only intended for temporary file storage, set this option to ensure that users cannot create 'setuid' files in '/tmp' .",,"Edit '/etc/systemd/system/local-fs.target.wants/tmp.mount' to add 'nosuid' to the '/tmp' mount options:
+
+[Mount]
+Options=mode=1777,strictatime,noexec,nodev,nosuid
+
+Run the following command to remount '/tmp' :
+
+# mount -o remount,nosuid /tmp"
+Filesystem Permissions,1.1.5 Ensure noexec option set on /tmp partition,The 'noexec' mount option specifies that the filesystem cannot contain executable binaries.,"Since the '/tmp' filesystem is only intended for temporary file storage, set this option to ensure that users cannot run executable binaries from '/tmp' .",,"Edit '/etc/systemd/system/local-fs.target.wants/tmp.mount' to add 'noexec' to the '/tmp' mount options:
+
+[Mount]
+Options=mode=1777,strictatime,noexec,nodev,nosuid
+
+Run the following command to remount '/tmp' :
+
+# mount -o remount,noexec /tmp"
+Filesystem Permissions,1.1.6 Ensure separate partition exists for /var,The '/var' directory is used by daemons and other system services to temporarily store dynamic data. Some directories created by these processes may be world-writable.,"Since the '/var' directory may contain world-writable files and directories, there is a risk of resource exhaustion if it is not bound to a separate partition.","Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/var' .
+
+For systems that were previously installed, create a new partition and configure '/etc/fstab' as appropriate."
+Filesystem Permissions,1.1.7 Ensure separate partition exists for /var/tmp,The '/var/tmp' directory is a world-writable directory used for temporary storage by all users and some applications.,"Since the '/var/tmp' directory is intended to be world-writable, there is a risk of resource exhaustion if it is not bound to a separate partition. In addition, making '/var/tmp' its own file system allows an administrator to set the 'noexec' option on the mount, making '/var/tmp' useless for an attacker to install executable code. It would also prevent an attacker from establishing a hardlink to a system 'setuid' program and wait for it to be updated. Once the program was updated, the hardlink would be broken and the attacker would have his own copy of the program. If the program happened to have a security vulnerability, the attacker could continue to exploit the known flaw.","Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/var/tmp' .
+
+For systems that were previously installed, create a new partition and configure '/etc/fstab' as appropriate."
+Filesystem Permissions,1.1.11 Ensure separate partition exists for /var/log,The '/var/log' directory is used by system services to store log data .,There are two important reasons to ensure that system logs are stored on a separate partition: protection against resource exhaustion (since logs can grow quite large) and protection of audit data.,"Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/var/log' .
+
+For systems that were previously installed, create a new partition and configure '/etc/fstab' as appropriate."
+Filesystem Permissions,1.1.12 Ensure separate partition exists for /var/log/audit,"The auditing daemon, 'auditd' , stores log data in the '/var/log/audit' directory.","There are two important reasons to ensure that data gathered by 'auditd' is stored on a separate partition: protection against resource exhaustion (since the 'audit.log' file can grow quite large) and protection of audit data. The audit daemon calculates how much free space is left and performs actions based on the results. If other processes (such as 'syslog' ) consume space in the same partition as 'auditd' , it may not perform as desired.","Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/var/log/audit' .
+
+For systems that were previously installed, create a new partition and configure '/etc/fstab' as appropriate."
+Filesystem Permissions,1.1.13 Ensure separate partition exists for /home,The '/home' directory is used to support disk storage needs of local users.,"If the system is intended to support local users, create a separate partition for the '/home' directory to protect against resource exhaustion and restrict the type of files that can be stored under '/home' .","Resizing filesystems is a common activity in cloud-hosted servers. Separate filesystem partitions may prevent successful resizing, or may require the installation of additional tools solely for the purpose of resizing operations. The use of these additional tools may introduce their own security considerations.","For new installations, during installation create a custom partition setup and specify a separate partition for '/home' .
+
+For systems that were previously installed, create a new partition and configure '/etc/fstab' as appropriate."
+Filesystem Permissions,1.1.21 Ensure sticky bit is set on all world-writable directories,Setting the sticky bit on world writable directories prevents users from deleting or renaming files in that directory that are not owned by them.,This feature prevents the ability to delete or rename files in world writable directories (such as '/tmp' ) that are owned by another user.,,"Run the following command to set the sticky bit on all world writable directories:
+
+# df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d -perm -0002 2>/dev/null | xargs chmod a+t"
+Filesystem Permissions,1.1.22 Disable Automounting,"'autofs' allows automatic mounting of devices, typically including CD/DVDs and USB drives.",With automounting enabled anyone with physical access could attach a USB drive or disc and have its contents available in system even if they lacked permissions to mount it themselves.,The use portable hard drives is very common for workstation users. If your organization allows the use of portable storage or media on workstations and physical access controls to workstations is considered adequate there is little value add in turning off automounting.,"Run the following command to disable 'autofs' :
+
+# systemctl disable autofs"
+System Services,1.2.1 Ensure package manager repositories are configured,Systems need to have package manager repositories configured to ensure they receive the latest patches and updates.,"If a system's package repositories are misconfigured important patches may not be identified or a rogue repository could introduce compromised software.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,Configure your package manager repositories according to site policy.
+System Services,1.2.2 Ensure gpgcheck is globally activated,"The 'gpgcheck' option, found in the main section of the '/etc/yum.conf' and individual '/etc/yum/repos.d/*' files determines if an RPM package's signature is checked prior to its installation.",It is important to ensure that an RPM's package signature is always checked prior to installation to ensure that the software is obtained from a trusted source.,,"Edit '/etc/yum.conf' and set ''gpgcheck=1'' in the '[main]' section.
+
+Edit any failing files in '/etc/yum.repos.d/*' and set all instances of 'gpgcheck' to ''1''."
+System Services,1.2.3 Ensure GPG keys are configured,Most packages managers implement GPG key signing to verify package integrity during installation.,"It is important to ensure that updates are obtained from a valid source to protect against spoofing that could lead to the inadvertent installation of malware on the system.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,Update your package manager GPG keys in accordance with site policy.
+System Services,1.2.4 Ensure Red Hat Subscription Manager connection is configured,Systems need to be registered with the Red Hat Subscription Manager (RHSM) to receive patch updates. This is usually configured during initial installation.,"It is important to register with the Red Hat Subscription Manager to make sure that patches are updated on a regular basis. This helps to reduce the exposure time as new vulnerabilities are discovered.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,"Run the following command to connect to the Red Hat Subscription Manager:
+
+# subscription-manager register"
+System Services,1.2.5 Disable the rhnsd Daemon,"The 'rhnsd' daemon polls the Red Hat Network web site for scheduled actions and, if there are, executes those actions.",Patch management policies may require that organizations test the impact of a patch before it is deployed in a production environment. Having patches automatically deployed could have a negative impact on the environment. It is best to not allow an action by default but only after appropriate consideration has been made. It is recommended that the service be disabled unless the risk is understood and accepted or you are running your own satellite . This item is not scored because organizations may have addressed the risk.,,"Run the following command to disable 'rhnsd' :
+
+# chkconfig rhnsd off"
+Filesystem Permissions,1.3.1 Ensure AIDE is installed,"AIDE takes a snapshot of filesystem state including modification times, permissions, and file hashes which can then be used to compare against the current state of the filesystem to detect modifications to the system.",By monitoring the filesystem state compromised files can be detected to prevent or limit the exposure of accidental or malicious misconfigurations or modified binaries.,,"Run the following command to install 'aide' :
+
+# yum install aide
+
+Configure AIDE as appropriate for your environment. Consult the AIDE documentation for options.
+
+Initialize AIDE:
+
+# aide --init
+# mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz"
+Filesystem Permissions,1.3.2 Ensure filesystem integrity is regularly checked,Periodic checking of the filesystem integrity is needed to detect changes to the filesystem.,Periodic file checking allows the system administrator to determine on a regular basis if critical files have been changed in an unauthorized fashion.,,"Run the following command:
+
+# crontab -u root -e
+
+Add the following line to the crontab:
+
+0 5 * * * /usr/sbin/aide --check"
+System Services,1.4.1 Ensure permissions on bootloader config are configured - user.cfg,The grub configuration file contains information on boot settings and passwords for unlocking boot options. The grub configuration is usually located at '/boot/grub2/grub.cfg' and linked as '/etc/grub2.cfg'. Additional settings can be found in the '/boot/grub2/user.cfg' file.,Setting the permissions to read and write for root only prevents non-root users from seeing the boot parameters or changing them. Non-root users who read the boot parameters may be able to identify weaknesses in security upon boot and be able to exploit them.,,"Run the following commands to set permissions on your grub configuration:
+
+# chown root:root /boot/grub2/grub.cfg
+# chmod og-rwx /boot/grub2/grub.cfg
+# chown root:root /boot/grub2/user.cfg
+# chmod og-rwx /boot/grub2/user.cfg"
+System Services,1.4.2 Ensure bootloader password is set,Setting the boot loader password will require that anyone rebooting the system must enter a password before being able to set command line boot parameters,Requiring a boot password upon execution of the boot loader will prevent an unauthorized user from entering boot parameters or changing the boot partition. This prevents users from weakening security (e.g. turning off SELinux at boot time).,,"Create an encrypted password with 'grub2-setpassword' :
+
+# grub2-setpassword
+Enter password:
+
+Confirm password:"
+System Services,1.4.3 Ensure authentication required for single user mode - emergency.service,Single user mode (rescue mode) is used for recovery when the system detects an issue during boot or by manual selection from the bootloader.,Requiring authentication in single user mode (rescue mode) prevents an unauthorized user from rebooting the system into single user to gain root privileges without credentials.,,"Edit '/usr/lib/systemd/system/rescue.service' and '/usr/lib/systemd/system/emergency.service' and set ExecStart to use '/sbin/sulogin' or '/usr/sbin/sulogin':
+
+ExecStart=-/bin/sh -c '/sbin/sulogin; /usr/bin/systemctl --fail --no-block default'"
+System Services,1.5.1 Ensure core dumps are restricted - limits.conf limits.d,"A core dump is the memory of an executable program. It is generally used to determine why a program aborted. It can also be used to glean confidential information from a core file. The system provides the ability to set a soft limit for core dumps, but this can be overridden by the user.","Setting a hard limit on core dumps prevents users from overriding the soft variable. If core dumps are required, consider setting limits for user groups (see 'limits.conf(5)' ). In addition, setting the 'fs.suid_dumpable' variable to 0 will prevent setuid programs from dumping core.",,"Add the following line to '/etc/security/limits.conf' or a '/etc/security/limits.d/*' file:
+
+* hard core 0
+
+Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+fs.suid_dumpable = 0
+
+Run the following command to set the active kernel parameter:
+
+# sysctl -w fs.suid_dumpable=0"
+System Services,1.5.2 Ensure XD/NX support is enabled,"Recent processors in the x86 family support the ability to prevent code execution on a per memory page basis. Generically and on AMD processors, this ability is called No Execute (NX), while on Intel processors it is called Execute Disable (XD). This ability can help prevent exploitation of buffer overflow vulnerabilities and should be activated whenever possible. Extra steps must be taken to ensure that this protection is enabled, particularly on 32-bit x86 systems. Other processors, such as Itanium and POWER, have included such support since inception and the standard kernel for those platforms supports the feature.",Enabling any feature that can protect against buffer overflow attacks enhances the security of the system.,,"On 32 bit systems install a kernel with PAE support, no installation is required on 64 bit systems:
+
+If necessary configure your bootloader to load the new kernel and reboot the system.
+
+You may need to enable NX or XD support in your bios."
+System Services,1.5.3 Ensure address space layout randomization (ASLR) is enabled - sysctl.conf sysctl.d,Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.,Randomly placing virtual memory regions will make it difficult to write memory page exploits as the memory placement will be consistently shifting.,,"Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+kernel.randomize_va_space = 2
+
+Run the following command to set the active kernel parameter:
+
+# sysctl -w kernel.randomize_va_space=2"
+System Services,1.5.4 Ensure prelink is disabled,'prelink 'is a program that modifies ELF shared libraries and ELF dynamically linked binaries in such a way that the time needed for the dynamic linker to perform relocations at startup significantly decreases.,"The prelinking feature can interfere with the operation of AIDE, because it changes binaries. Prelinking can also increase the vulnerability of the system if a malicious user is able to compromise a common library such as libc.",,"Run the following commands to restore binaries to normal and uninstall 'prelink' :
+
+# prelink -ua
+# yum remove prelink"
+Access Controls,1.6.1.1 Ensure SELinux is not disabled in bootloader configuration - enforcing = 0,Configure SELINUX to be enabled at boot time and verify that it has not been overwritten by the grub boot parameters.,SELinux must be enabled at boot time in your grub configuration to ensure that the controls it provides are not overridden.,,"Edit '/etc/default/grub' and remove all instances of 'selinux=0' and 'enforcing=0' from all 'CMDLINE_LINUX' parameters:
+
+GRUB_CMDLINE_LINUX_DEFAULT='quiet'
+GRUB_CMDLINE_LINUX=''
+
+Run the following command to update the 'grub2' configuration:
+
+# grub2-mkconfig -o /boot/grub2/grub.cfg"
+Access Controls,1.6.1.2 Ensure the SELinux state is enforcing,Set SELinux to enable when the system is booted.,SELinux must be enabled at boot time in to ensure that the controls it provides are in effect at all times.,,"Edit the '/etc/selinux/config' file to set the SELINUX parameter:
+
+SELINUX=enforcing"
+Access Controls,1.6.1.3 Ensure SELinux policy is configured,"Configure SELinux to meet or exceed the default targeted policy, which constrains daemons and system software only.","Security configuration requirements vary from site to site. Some sites may mandate a policy that is stricter than the default policy, which is perfectly acceptable. This item is intended to ensure that at least the default recommendations are met.",,"Edit the '/etc/selinux/config' file to set the SELINUXTYPE parameter:
+
+SELINUXTYPE=targeted"
+Access Controls,1.6.1.4 Ensure SETroubleshoot is not installed,"The SETroubleshoot service notifies desktop users of SELinux denials through a user-friendly interface. The service provides important information around configuration errors, unauthorized intrusions, and other potential errors.","The SETroubleshoot service is an unnecessary daemon to have running on a server, especially if X Windows is disabled.",,"Run the following command to uninstall s 'etroubleshoot' :
+
+# yum remove setroubleshoot"
+Access Controls,1.6.1.5 Ensure the MCS Translation Service (mcstrans) is not installed,The 'mcstransd' daemon provides category label information to client processes requesting information. The label translations are defined in '/etc/selinux/targeted/setrans.conf',"Since this service is not used very often, remove it to reduce the amount of potentially vulnerable code running on the system.",,"Run the following command to uninstall mcstrans:
+
+# yum remove mcstrans"
+Access Controls,1.6.1.6 Ensure no unconfined daemons exist,Daemons that are not defined in SELinux policy will inherit the security context of their parent process.,"Since daemons are launched and descend from the 'init' process, they will inherit the security context label 'initrc_t' . This could cause the unintended consequence of giving the process more permission than it requires.",,Investigate any unconfined daemons found during the audit action. They may need to have an existing security context assigned to them or a policy built for them.
+Access Controls,1.6.2 Ensure SELinux is installed,SELinux provides Mandatory Access Controls.,Without a Mandatory Access Control system installed only the default Discretionary Access Control system will be available.,,"Run the following command to install 'libselinux' :
+
+# yum install libselinux"
+System Services,1.7.1.1 Ensure message of the day is configured properly - banner text,"The contents of the '/etc/motd' file are displayed to users after login and function as a message of the day for authenticated users.
+
+Unix-based systems have typically displayed information about the OS release and patch level upon logging in to the system. This information can be useful to developers who are developing software for a particular OS platform. If 'mingetty(8)' supports the following options, they display operating system information: 'm' - machine architecture 'r' - operating system release 's' - operating system name 'v' - operating system version",Warning messages inform users who are attempting to login to the system of their legal status regarding the system and must include the name of the organization that owns the system and any monitoring policies that are in place. Displaying OS and patch level information in login banners also has the side effect of providing detailed system information to attackers attempting to target specific exploits of a system. Authorized users can easily get this information by running the ' 'uname -a' ' command once they have logged in.,,"Edit the '/etc/motd' file with the appropriate contents according to your site policy, remove any instances of 'm' , 'r' , 's' , or 'v.'"
+System Services,1.7.1.2 Ensure local login warning banner is configured properly - banner text,"The contents of the '/etc/issue' file are displayed to users prior to login for local terminals.
+
+Unix-based systems have typically displayed information about the OS release and patch level upon logging in to the system. This information can be useful to developers who are developing software for a particular OS platform. If 'mingetty(8)' supports the following options, they display operating system information: 'm' - machine architecture 'r' - operating system release 's' - operating system name 'v' - operating system version",Warning messages inform users who are attempting to login to the system of their legal status regarding the system and must include the name of the organization that owns the system and any monitoring policies that are in place. Displaying OS and patch level information in login banners also has the side effect of providing detailed system information to attackers attempting to target specific exploits of a system. Authorized users can easily get this information by running the ' 'uname -a' ' command once they have logged in.,,"Edit the '/etc/issue' file with the appropriate contents according to your site policy, remove any instances of 'm' , 'r' , 's' , or 'v' :
+
+# echo 'Authorized uses only. All activity may be monitored and reported.' > /etc/issue"
+System Services,1.7.1.3 Ensure remote login warning banner is configured properly - banner text,"The contents of the '/etc/issue.net' file are displayed to users prior to login for remote connections from configured services.
+
+Unix-based systems have typically displayed information about the OS release and patch level upon logging in to the system. This information can be useful to developers who are developing software for a particular OS platform. If 'mingetty(8)' supports the following options, they display operating system information: 'm' - machine architecture 'r' - operating system release 's' - operating system name 'v' - operating system version",Warning messages inform users who are attempting to login to the system of their legal status regarding the system and must include the name of the organization that owns the system and any monitoring policies that are in place. Displaying OS and patch level information in login banners also has the side effect of providing detailed system information to attackers attempting to target specific exploits of a system. Authorized users can easily get this information by running the ' 'uname -a' ' command once they have logged in.,,"Edit the '/etc/issue.net' file with the appropriate contents according to your site policy, remove any instances of 'm' , 'r' , 's' , or 'v' :
+
+# echo 'Authorized uses only. All activity may be monitored and reported.' > /etc/issue.net"
+System Services,1.7.1.4 Ensure permissions on /etc/motd are configured,The contents of the '/etc/motd' file are displayed to users after login and function as a message of the day for authenticated users.,If the '/etc/motd' file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information.,,"Run the following commands to set permissions on '/etc/motd' :
+
+# chown root:root /etc/motd
+# chmod 644 /etc/motd"
+System Services,1.7.1.5 Ensure permissions on /etc/issue are configured,The contents of the '/etc/issue' file are displayed to users prior to login for local terminals.,If the '/etc/issue' file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information.,,"Run the following commands to set permissions on '/etc/issue' :
+
+# chown root:root /etc/issue
+# chmod 644 /etc/issue"
+System Services,1.7.1.6 Ensure permissions on /etc/issue.net are configured,The contents of the '/etc/issue.net' file are displayed to users prior to login for remote connections from configured services.,If the '/etc/issue.net' file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information.,,"Run the following commands to set permissions on '/etc/issue.net' :
+
+# chown root:root /etc/issue.net
+# chmod 644 /etc/issue.net"
+System Services,1.7.2 Ensure GDM login banner is configured - banner message text,GDM is the GNOME Display Manager which handles graphical login for GNOME based systems.,"Warning messages inform users who are attempting to login to the system of their legal status regarding the system and must include the name of the organization that owns the system and any monitoring policies that are in place.
+
+NOTE: gdm is not installed on the target.",,
+System Services,"1.8 Ensure updates, patches, and additional security software are installed",Periodically patches are released for included software either due to security flaws or to include additional functionality.,"Newer patches may contain security enhancements that would not be available through the latest full update. As a result, it is recommended that the latest software patches be used to take advantage of the latest functionality. As with any software installation, organizations need to determine if a given update meets their requirements and verify the compatibility and supportability of any additional software against the update revision that is selected.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,
+System Services,2.1.1 Ensure chargen services are not enabled - stream,'chargen 'is a network service that responds with 0 to 512 ASCII characters for each connection it receives. This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,Disabling this service will reduce the remote attack surface of the system.,,"Run the following commands to disable 'chargen-dgram' and 'chargen-stream' :
+
+# chkconfig chargen-dgram off
+# chkconfig chargen-stream off"
+System Services,2.1.2 Ensure daytime services are not enabled - dgram,'daytime' is a network service that responds with the server's current date and time. This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,Disabling this service will reduce the remote attack surface of the system.,,"Run the following commands to disable 'daytime' -dgram and 'daytime' -stream:
+
+# chkconfig daytime-dgram off
+# chkconfig daytime-stream off"
+System Services,2.1.3 Ensure discard services are not enabled - dgram,'discard 'is a network service that simply discards all data it receives. This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,Disabling this service will reduce the remote attack surface of the system.,,"Run the following commands to disable 'discard' -dgram and 'discard' -stream:
+
+# chkconfig discard-dgram off
+# chkconfig discard-stream off"
+System Services,2.1.4 Ensure echo services are not enabled - dgram,'echo 'is a network service that responds to clients with the data sent to it by the client. This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,Disabling this service will reduce the remote attack surface of the system.,,"Run the following commands to disable 'echo' -dgram and 'echo' -stream:
+
+# chkconfig echo-dgram off
+# chkconfig echo-stream off"
+System Services,2.1.5 Ensure time services are not enabled - dgram,'time 'is a network service that responds with the server's current date and time as a 32 bit integer. This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,Disabling this service will reduce the remote attack surface of the system.,,"Run the following commands to disable 'time' -dgram and 'time' -stream:
+
+# chkconfig time-dgram off
+# chkconfig time-stream off"
+System Services,2.1.6 Ensure tftp server is not enabled,"Trivial File Transfer Protocol (TFTP) is a simple file transfer protocol, typically used to automatically transfer configuration or boot machines from a boot server. The package 'tftp-server' is used to define and support a TFTP server.","TFTP does not support authentication nor does it ensure the confidentiality or integrity of data. It is recommended that TFTP be removed, unless there is a specific need for TFTP. In that case, extreme caution must be used when configuring the services.",,"Run the following command to disable tftp:
+
+# chkconfig tftp off"
+System Services,2.1.7 Ensure xinetd is not enabled,The eXtended InterNET Daemon ( 'xinetd' ) is an open source super daemon that replaced the original 'inetd' daemon. The 'xinetd' daemon listens for well known services and dispatches the appropriate daemon to properly respond to service requests.,"If there are no 'xinetd' services required, it is recommended that the daemon be disabled.",,"Run the following command to disable 'xinetd' :
+
+# systemctl disable xinetd"
+System Services,2.2.1.1 Ensure time synchronization is in use,System time should be synchronized between all systems in an environment. This is typically done by establishing an authoritative time server or set of servers and having all systems synchronize their clocks to them.,"Time synchronization is important to support time sensitive security mechanisms like Kerberos and also ensures log files have consistent time records across the enterprise, which aids in forensic investigations.",,"On physical systems or virtual systems where host based time synchronization is not available run one of the following commands to install either 'ntp' or 'chrony' :
+
+# yum install ntp
+# yum install chrony
+
+On virtual systems where host based time synchronization is available consult your virtualization software documentation and setup host based synchronization."
+System Services,2.2.1.2 Ensure ntp is configured - restrict -4,"'ntp' is a daemon which implements the Network Time Protocol (NTP). It is designed to synchronize system clocks across a variety of systems and use a source that is highly accurate. More information on NTP can be found at [http://www.ntp.org](http://www.ntp.org/). 'ntp' can be configured to be a client and/or a server.
+
+This recommendation only applies if ntp is in use on the system.",If ntp is in use on the system proper configuration is vital to ensuring time synchronization is working properly.,,"Add or edit restrict lines in '/etc/ntp.conf' to match the following:
+
+restrict -4 default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+
+Add or edit server or pool lines to '/etc/ntp.conf' as appropriate:
+
+server
+
+Add or edit the 'OPTIONS' in '/etc/sysconfig/ntpd' to include ' '-u ntp:ntp' ':
+
+OPTIONS='-u ntp:ntp'"
+System Services,2.2.1.3 Ensure chrony is configured - NTP server,'chrony' is a daemon which implements the Network Time Protocol (NTP) is designed to synchronize system clocks across a variety of systems and use a source that is highly accurate. More information on 'chrony' can be found at . 'chrony' can be configured to be a client and/or a server.,"If chrony is in use on the system proper configuration is vital to ensuring time synchronization is working properly.
+
+This recommendation only applies if chrony is in use on the system.",,"Add or edit server or pool lines to '/etc/chrony.conf' as appropriate:
+
+server
+
+Add or edit the 'OPTIONS' in '/etc/sysconfig/chronyd' to include ''-u chrony'':
+
+OPTIONS='-u chrony'"
+System Services,2.2.2 Ensure X Window System is not installed,"The X Window System provides a Graphical User Interface (GUI) where users can have multiple windows in which to run programs and various add on. The X Windows system is typically used on workstations where users login, but not on servers where users typically do not login.","Unless your organization specifically requires graphical login access via X Windows, remove it to reduce the potential attack surface.",,"Run the following command to remove the X Windows System packages:
+
+# yum remove xorg-x11*"
+System Services,2.2.3 Ensure Avahi Server is not enabled,"Avahi is a free zeroconf implementation, including a system for multicast DNS/DNS-SD service discovery. Avahi allows programs to publish and discover services and hosts running on a local network with no specific configuration. For example, a user can plug a computer into a network and Avahi automatically finds printers to print to, files to look at and people to talk to, as well as network services running on the machine.",Automatic discovery of network services is not normally required for system functionality. It is recommended to disable the service to reduce the potential attack surface.,,"Run the following command to disable 'avahi-daemon' :
+
+# systemctl disable avahi-daemon"
+System Services,2.2.4 Ensure CUPS is not enabled,The Common Unix Print System (CUPS) provides the ability to print to both local and network printers. A system running CUPS can also accept print jobs from remote systems and print them to local printers. It also provides a web based remote administration capability.,"If the system does not need to print jobs or accept print jobs from other systems, it is recommended that CUPS be disabled to reduce the potential attack surface.","Disabling CUPS will prevent printing from the system, a common task for workstation systems.","Run the following command to disable 'cups' :
+
+# systemctl disable cups"
+System Services,2.2.5 Ensure DHCP Server is not enabled,The Dynamic Host Configuration Protocol (DHCP) is a service that allows machines to be dynamically assigned IP addresses.,"Unless a system is specifically set up to act as a DHCP server, it is recommended that this service be disabled to reduce the potential attack surface.",,"Run the following command to disable 'dhcpd' :
+
+# systemctl disable dhcpd"
+System Services,2.2.6 Ensure LDAP server is not enabled,The Lightweight Directory Access Protocol (LDAP) was introduced as a replacement for NIS/YP. It is a service that provides a method for looking up information from a central database.,"If the system will not need to act as an LDAP server, it is recommended that the software be disabled to reduce the potential attack surface.",,"Run the following command to disable 'slapd' :
+
+# systemctl disable slapd"
+System Services,2.2.7 Ensure NFS and RPC are not enabled - nfs,The Network File System (NFS) is one of the first and most widely distributed file systems in the UNIX environment. It provides the ability for systems to mount file systems of other servers through the network.,"If the system does not export NFS shares or act as an NFS client, it is recommended that these services be disabled to reduce remote attack surface.",,"Run the following commands to disable 'nfs', 'nfs-server' and 'rpcbind':
+
+# systemctl disable nfs
+# systemctl disable nfs-server
+# systemctl disable rpcbind"
+System Services,2.2.8 Ensure DNS Server is not enabled,"The Domain Name System (DNS) is a hierarchical naming system that maps names to IP addresses for computers, services and other resources connected to a network.","Unless a system is specifically designated to act as a DNS server, it is recommended that the service be disabled to reduce the potential attack surface.",,"Run the following command to disable 'named' :
+
+# systemctl disable named"
+System Services,2.2.9 Ensure FTP Server is not enabled,The File Transfer Protocol (FTP) provides networked computers with the ability to transfer files.,"FTP does not protect the confidentiality of data or authentication credentials. It is recommended sftp be used if file transfer is required. Unless there is a need to run the system as a FTP server (for example, to allow anonymous downloads), it is recommended that the service be disabled to reduce the potential attack surface.",,"Run the following command to disable 'vsftpd' :
+
+# systemctl disable vsftpd"
+System Services,2.2.10 Ensure HTTP server is not enabled,HTTP or web servers provide the ability to host web site content.,"Unless there is a need to run the system as a web server, it is recommended that the service be disabled to reduce the potential attack surface.",,"Run the following command to disable 'httpd' :
+
+# systemctl disable httpd"
+System Services,2.2.11 Ensure IMAP and POP3 server is not enabled,'dovecot' is an open source IMAP and POP3 server for Linux based systems.,"Unless POP3 and/or IMAP servers are to be provided by this system, it is recommended that the service be disabled to reduce the potential attack surface.",,"Run the following command to disable 'dovecot' :
+
+# systemctl disable dovecot"
+System Services,2.2.12 Ensure Samba is not enabled,The Samba daemon allows system administrators to configure their Linux systems to share file systems and directories with Windows desktops. Samba will advertise the file systems and directories via the Small Message Block (SMB) protocol. Windows desktop users will be able to mount these directories and file systems as letter drives on their systems.,"If there is no need to mount directories and file systems to Windows systems, then this service can be disabled to reduce the potential attack surface.",,"Run the following command to disable 'smb' :
+
+# systemctl disable smb"
+System Services,2.2.13 Ensure HTTP Proxy Server is not enabled,Squid is a standard proxy server used in many distributions and environments.,"If there is no need for a proxy server, it is recommended that the squid proxy be disabled to reduce the potential attack surface.",,"Run the following command to disable 'squid' :
+
+# systemctl disable squid"
+System Services,2.2.14 Ensure SNMP Server is not enabled,"The Simple Network Management Protocol (SNMP) server is used to listen for SNMP commands from an SNMP management system, execute the commands or collect the information and then send results back to the requesting system.","The SNMP server can communicate using SNMP v1, which transmits data in the clear and does not require authentication to execute commands. Unless absolutely necessary, it is recommended that the SNMP service not be used. If SNMP is required the server should be configured to disallow SNMP v1.",,"Run the following command to disable 'snmpd':
+
+# systemctl disable snmpd"
+System Services,2.2.15 Ensure mail transfer agent is configured for local-only mode,"Mail Transfer Agents (MTA), such as sendmail and Postfix, are used to listen for incoming mail and transfer the messages to the appropriate user or mail server. If the system is not intended to be a mail server, it is recommended that the MTA be configured to only process local mail.","The software for all Mail Transfer Agents is complex and most have a long history of security issues. While it is important to ensure that the system can process local mail messages, it is not necessary to have the MTA's daemon listening on a port unless the server is intended to be a mail server that receives and processes mail from other systems.",,"Edit '/etc/postfix/main.cf' and add the following line to the RECEIVING MAIL section. If the line already exists, change it to look like the line below:
+
+inet_interfaces = loopback-only
+
+Restart postfix:
+
+# systemctl restart postfix"
+System Services,2.2.16 Ensure NIS Server is not enabled,The Network Information Service (NIS) (formally known as Yellow Pages) is a client-server directory service protocol for distributing system configuration files. The NIS server is a collection of programs that allow for the distribution of configuration files.,"The NIS service is inherently an insecure system that has been vulnerable to DOS attacks, buffer overflows and has poor authentication for querying NIS maps. NIS generally been replaced by such protocols as Lightweight Directory Access Protocol (LDAP). It is recommended that the service be disabled and other, more secure services be used",,"Run the following command to disable 'ypserv' :
+
+# systemctl disable ypserv"
+System Services,2.2.17 Ensure rsh server is not enabled - rexec,"The Berkeley 'rsh-server' ( 'rsh' , 'rlogin' , 'rexec' ) package contains legacy services that exchange credentials in clear-text.",These legacy services contain numerous security exposures and have been replaced with the more secure SSH package.,,"Run the following commands to disable 'rsh' , 'rlogin' , and 'rexec' :
+
+# systemctl disable rsh.socket
+# systemctl disable rlogin.socket
+# systemctl disable rexec.socket"
+System Services,2.2.18 Ensure talk server is not enabled,The talk software makes it possible for users to send and receive messages across systems through a terminal session. The talk client (allows initiate of talk sessions) is installed by default.,The software presents a security risk as it uses unencrypted protocols for communication.,,"Run the following command to disable talk:
+
+# systemctl disable ntalk"
+System Services,2.2.19 Ensure telnet server is not enabled,"The 'telnet-server' package contains the 'telnet' daemon, which accepts connections from users from other systems via the 'telnet' protocol.",The 'telnet' protocol is insecure and unencrypted. The use of an unencrypted transmission medium could allow a user with access to sniff network traffic the ability to steal credentials. The 'ssh' package provides an encrypted session and stronger security.,,"Run the following command to disable telnet:
+
+# systemctl disable telnet.socket"
+System Services,2.2.21 Ensure rsync service is not enabled,The 'rsyncd' service can be used to synchronize files between systems over network links.,The 'rsyncd' service presents a security risk as it uses unencrypted protocols for communication.,,"Run the following command to disable 'rsync' :
+
+# systemctl disable rsyncd"
+System Services,2.3.1 Ensure NIS Client is not installed,"The Network Information Service (NIS), formerly known as Yellow Pages, is a client-server directory service protocol used to distribute system configuration files. The NIS client ( 'ypbind' ) was used to bind a machine to an NIS server and receive the distributed configuration files.","The NIS service is inherently an insecure system that has been vulnerable to DOS attacks, buffer overflows and has poor authentication for querying NIS maps. NIS generally has been replaced by such protocols as Lightweight Directory Access Protocol (LDAP). It is recommended that the service be removed.",Many insecure service clients are used as troubleshooting tools and in testing environments. Uninstalling them can inhibit capability to test and troubleshoot. If they are required it is advisable to remove the clients after use to prevent accidental or intentional misuse.,"Run the following command to uninstall 'ypbind' :
+
+# yum remove ypbind"
+System Services,2.3.2 Ensure rsh client is not installed,The 'rsh' package contains the client commands for the rsh services.,"These legacy clients contain numerous security exposures and have been replaced with the more secure SSH package. Even if the server is removed, it is best to ensure the clients are also removed to prevent users from inadvertently attempting to use these commands and therefore exposing their credentials. Note that removing the 'rsh' package removes the clients for 'rsh' , 'rcp' and 'rlogin' .",Many insecure service clients are used as troubleshooting tools and in testing environments. Uninstalling them can inhibit capability to test and troubleshoot. If they are required it is advisable to remove the clients after use to prevent accidental or intentional misuse.,"Run the following command to uninstall 'rsh' :
+
+# yum remove rsh"
+System Services,2.3.3 Ensure talk client is not installed,"The 'talk' software makes it possible for users to send and receive messages across systems through a terminal session. The 'talk' client, which allows initialization of talk sessions, is installed by default.",The software presents a security risk as it uses unencrypted protocols for communication.,Many insecure service clients are used as troubleshooting tools and in testing environments. Uninstalling them can inhibit capability to test and troubleshoot. If they are required it is advisable to remove the clients after use to prevent accidental or intentional misuse.,"Run the following command to uninstall 'talk' :
+
+# yum remove talk"
+System Services,2.3.4 Ensure telnet client is not installed,"The 'telnet' package contains the 'telnet' client, which allows users to start connections to other systems via the telnet protocol.",The 'telnet' protocol is insecure and unencrypted. The use of an unencrypted transmission medium could allow an unauthorized user to steal credentials. The 'ssh' package provides an encrypted session and stronger security and is included in most Linux distributions.,Many insecure service clients are used as troubleshooting tools and in testing environments. Uninstalling them can inhibit capability to test and troubleshoot. If they are required it is advisable to remove the clients after use to prevent accidental or intentional misuse.,"Run the following command to uninstall 'telnet' :
+
+# yum remove telnet"
+System Services,3.1.1 Ensure IP forwarding is disabled - sysctlc.conf sysctl.d,The 'net.ipv4.ip_forward' flag is used to tell the system whether it can forward packets or not.,"Setting the flag to 0 ensures that a system with multiple interfaces (for example, a hard proxy), will never be able to forward packets, and therefore, never serve as a router.",,"Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.ip_forward = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.ip_forward=0
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.1.2 Ensure packet redirect sending is disabled - 'net.ipv4.conf.all.send_redirects = 0',"ICMP Redirects are used to send routing information to other hosts. As a host itself does not act as a router (in a host only configuration), there is no need to send redirects.",An attacker could use a compromised host to send invalid ICMP redirects to other router devices in an attempt to corrupt routing and have users access a system set up by the attacker as opposed to a valid system.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.send_redirects=0
+# sysctl -w net.ipv4.conf.default.send_redirects=0
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.1 Ensure source routed packets are not accepted - files 'net.ipv4.conf.all.accept_source_route = 0',"In networking, source routing allows a sender to partially or fully specify the route packets take through a network. In contrast, non-source routed packets travel a path determined by routers in the network. In some cases, systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.","Setting 'net.ipv4.conf.all.accept_source_route' and 'net.ipv4.conf.default.accept_source_route' to 0 disables the system from accepting source routed packets. Assume this system was capable of routing packets to Internet routable addresses on one interface and private addresses on another interface. Assume that the private addresses were not routable to the Internet routable addresses and vice versa. Under normal routing circumstances, an attacker from the Internet routable addresses could not use the system as a way to reach the private address systems. If, however, source routed packets were allowed, they could be used to gain access to the private address systems as the route could be specified, rather than rely on routing protocols that did not allow this routing.",,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.accept_source_route=0
+# sysctl -w net.ipv4.conf.default.accept_source_route=0
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.2 Ensure ICMP redirects are not accepted - 'net.ipv4.conf.all.accept_redirects = 0',"ICMP redirect messages are packets that convey routing information and tell your host (acting as a router) to send packets via an alternate path. It is a way of allowing an outside routing device to update your system routing tables. By setting 'net.ipv4.conf.all.accept_redirects' to 0, the system will not accept any ICMP redirect messages, and therefore, won't allow outsiders to update the system's routing tables.",Attackers could use bogus ICMP redirect messages to maliciously alter the system routing tables and get them to send packets to incorrect networks and allow your system packets to be captured.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.accept_redirects=0
+# sysctl -w net.ipv4.conf.default.accept_redirects=0
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.3 Ensure secure ICMP redirects are not accepted - 'net.ipv4.conf.default.secure_redirects = 0',"Secure ICMP redirects are the same as ICMP redirects, except they come from gateways listed on the default gateway list. It is assumed that these gateways are known to your system, and that they are likely to be secure.",It is still possible for even known gateways to be compromised. Setting 'net.ipv4.conf.all.secure_redirects' to 0 protects the system from routing table updates by possibly compromised known gateways.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.secure_redirects=0
+# sysctl -w net.ipv4.conf.default.secure_redirects=0
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.4 Ensure suspicious packets are logged - 'net.ipv4.conf.default.log_martians = 1',"When enabled, this feature logs packets with un-routable source addresses to the kernel log.",Enabling this feature and logging these packets allows an administrator to investigate the possibility that an attacker is sending spoofed packets to their system.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.log_martians=1
+# sysctl -w net.ipv4.conf.default.log_martians=1
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.5 Ensure broadcast ICMP requests are ignored - sysctl,Setting 'net.ipv4.icmp_echo_ignore_broadcasts' to 1 will cause the system to ignore all ICMP echo and timestamp requests to broadcast and multicast addresses.,"Accepting ICMP echo and timestamp requests with broadcast or multicast destinations for your network could be used to trick your host into starting (or participating) in a Smurf attack. A Smurf attack relies on an attacker sending large amounts of ICMP broadcast messages with a spoofed source address. All hosts receiving this message and responding would send echo-reply messages back to the spoofed address, which is probably not routable. If many hosts respond to the packets, the amount of traffic on the network could be significantly multiplied.",,"Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.6 Ensure bogus ICMP responses are ignored - sysctl,"Setting 'icmp_ignore_bogus_error_responses' to 1 prevents the kernel from logging bogus responses (RFC-1122 non-compliant) from broadcast reframes, keeping file systems from filling up with useless log messages.",Some routers (and some attackers) will send responses that violate RFC-1122 and attempt to fill up a log file system with many useless error messages.,,"Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.7 Ensure Reverse Path Filtering is enabled - files 'net.ipv4.conf.all.rp_filter = 1',"Setting 'net.ipv4.conf.all.rp_filter' and 'net.ipv4.conf.default.rp_filter' to 1 forces the Linux kernel to utilize reverse path filtering on a received packet to determine if the packet was valid. Essentially, with reverse path filtering, if the return packet does not go out the same interface that the corresponding source packet came from, the packet is dropped (and logged if 'log_martians' is set).","Setting these flags is a good way to deter attackers from sending your system bogus packets that cannot be responded to. One instance where this feature breaks down is if asymmetrical routing is employed. This would occur when using dynamic routing protocols (bgp, ospf, etc) on your system. If you are using asymmetrical routing on your system, you will not be able to enable this feature without breaking the routing.",,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.conf.all.rp_filter=1
+# sysctl -w net.ipv4.conf.default.rp_filter=1
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.2.8 Ensure TCP SYN Cookies is enabled - sysctl,"When 'tcp_syncookies' is set, the kernel will handle TCP SYN packets normally until the half-open connection queue is full, at which time, the SYN cookie functionality kicks in. SYN cookies work by not using the SYN queue at all. Instead, the kernel simply replies to the SYN with a SYN|ACK, but will include a specially crafted TCP sequence number that encodes the source and destination IP address and port number and the time the packet was sent. A legitimate connection would send the ACK packet of the three way handshake with the specially crafted sequence number. This allows the system to verify that it has received a valid response to a SYN cookie and allow the connection, even though there is no corresponding SYN in the queue.","Attackers use SYN flood attacks to perform a denial of service attacked on a system by sending many SYN packets without completing the three way handshake. This will quickly use up slots in the kernel's half-open connection queue and prevent legitimate connections from succeeding. SYN cookies allow the system to keep accepting valid connections, even if under a denial of service attack.",,"Set the following parameter in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv4.tcp_syncookies = 1
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv4.tcp_syncookies=1
+# sysctl -w net.ipv4.route.flush=1"
+System Services,3.3.1 Ensure IPv6 router advertisements are not accepted - 'net.ipv6.conf.all.accept_ra = 0',This setting disables the system's ability to accept IPv6 router advertisements.,It is recommended that systems not accept router advertisements as they could be tricked into routing traffic to compromised machines. Setting hard routes within the system (usually a single default route to a trusted router) protects the system from bad routes.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv6.conf.all.accept_ra = 0
+net.ipv6.conf.default.accept_ra = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv6.conf.all.accept_ra=0
+# sysctl -w net.ipv6.conf.default.accept_ra=0
+# sysctl -w net.ipv6.route.flush=1"
+System Services,3.3.2 Ensure IPv6 redirects are not accepted - files 'net.ipv6.conf.default.accept_redirects = 0',This setting prevents the system from accepting ICMP redirects. ICMP redirects tell the system about alternate routes for sending traffic.,It is recommended that systems not accept ICMP redirects as they could be tricked into routing traffic to compromised machines. Setting hard routes within the system (usually a single default route to a trusted router) protects the system from bad routes.,,"Set the following parameters in '/etc/sysctl.conf' or a '/etc/sysctl.d/*' file:
+
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+
+Run the following commands to set the active kernel parameters:
+
+# sysctl -w net.ipv6.conf.all.accept_redirects=0
+# sysctl -w net.ipv6.conf.default.accept_redirects=0
+# sysctl -w net.ipv6.route.flush=1"
+System Services,3.3.3 Ensure IPv6 is disabled,"Although IPv6 has many advantages over IPv4, few organizations have implemented IPv6.","If IPv6 is not to be used, it is recommended that it be disabled to reduce the attack surface of the system.",,"Edit '/etc/default/grub' and remove add 'ipv6.disable=1' to the 'GRUB_CMDLINE_LINUX' parameters:
+
+    GRUB_CMDLINE_LINUX='ipv6.disable=1'
+
+    Run the following command to update the 'grub2' configuration:
+
+    # grub2-mkconfig > /boot/grub2/grub.cfg"
+System Services,3.4.1 Ensure TCP Wrappers is installed,"TCP Wrappers provides a simple access list and standardized logging method for services capable of supporting it. In the past, services that were called from 'inetd' and 'xinetd' supported the use of tcp wrappers. As 'inetd' and 'xinetd' have been falling in disuse, any service that can support tcp wrappers will have the 'libwrap.so' library attached to it.","TCP Wrappers provide a good simple access list mechanism to services that may not have that support built in. It is recommended that all services that can support TCP Wrappers, use it.",,"Run the following command to install 'tcp_wrappers' :
+
+# yum install tcp_wrappers"
+System Services,3.4.2 Ensure /etc/hosts.allow is configured,The '/etc/hosts.allow' file specifies which IP addresses are permitted to connect to the host. It is intended to be used in conjunction with the '/etc/hosts.deny' file.,The '/etc/hosts.allow' file supports access control by IP and helps ensure that only authorized systems can connect to the system.,,"Run the following command to create '/etc/hosts.allow' :
+
+# echo 'ALL: /, /, ...' >/etc/hosts.allow
+
+where each '/' combination (for example, '192.168.1.0/255.255.255.0') represents one network block in use by your organization that requires access to this system."
+System Services,3.4.3 Ensure /etc/hosts.deny is configured,The '/etc/hosts.deny' file specifies which IP addresses are not permitted to connect to the host. It is intended to be used in conjunction with the '/etc/hosts.allow' file.,The '/etc/hosts.deny' file serves as a failsafe so that any host not specified in '/etc/hosts.allow' is denied access to the system.,,"Run the following command to create '/etc/hosts.deny' :
+
+# echo 'ALL: ALL' >> /etc/hosts.deny"
+System Services,3.4.4 Ensure permissions on /etc/hosts.allow are configured,The '/etc/hosts.allow' file contains networking information that is used by many applications and therefore must be readable for these applications to operate.,"It is critical to ensure that the '/etc/hosts.allow' file is protected from unauthorized write access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following commands to set permissions on '/etc/hosts.allow' :
+
+# chown root:root /etc/hosts.allow
+# chmod 644 /etc/hosts.allow"
+System Services,3.4.5 Ensure permissions on /etc/hosts.deny are configured,The '/etc/hosts.deny' file contains network information that is used by many system applications and therefore must be readable for these applications to operate.,"It is critical to ensure that the '/etc/hosts.deny' file is protected from unauthorized write access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following commands to set permissions on '/etc/hosts.deny' :
+
+# chown root:root /etc/hosts.deny
+# chmod 644 /etc/hosts.deny"
+System Services,3.5.1 Ensure DCCP is disabled,"The Datagram Congestion Control Protocol (DCCP) is a transport layer protocol that supports streaming media and telephony. DCCP provides a way to gain access to congestion control, without having to do it at the application layer, but does not provide in-sequence delivery.","If the protocol is not required, it is recommended that the drivers not be installed to reduce the potential attack surface.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install dccp /bin/true"
+System Services,3.5.2 Ensure SCTP is disabled,"The Stream Control Transmission Protocol (SCTP) is a transport layer protocol used to support message oriented communication, with several streams of messages in one connection. It serves a similar function as TCP and UDP, incorporating features of both. It is message-oriented like UDP, and ensures reliable in-sequence transport of messages with congestion control like TCP.","If the protocol is not being used, it is recommended that kernel module not be loaded, disabling the service to reduce the potential attack surface.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install sctp /bin/true"
+System Services,3.5.3 Ensure RDS is disabled,"The Reliable Datagram Sockets (RDS) protocol is a transport layer protocol designed to provide low-latency, high-bandwidth communications between cluster nodes. It was developed by the Oracle Corporation.","If the protocol is not being used, it is recommended that kernel module not be loaded, disabling the service to reduce the potential attack surface.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install rds /bin/true"
+System Services,3.5.4 Ensure TIPC is disabled,The Transparent Inter-Process Communication (TIPC) protocol is designed to provide communication between cluster nodes.,"If the protocol is not being used, it is recommended that kernel module not be loaded, disabling the service to reduce the potential attack surface.",,"Edit or create the file '/etc/modprobe.d/CIS.conf' and add the following line:
+
+install tipc /bin/true"
+System Services,3.6.1 Ensure iptables is installed,'iptables' allows configuration of the IPv4 tables in the linux kernel and the rules stored within them. Most firewall configuration utilities operate as a front end to 'iptables'.,iptables is required for firewall management and configuration.,,"Run the following command to install 'iptables' :
+
+# yum install iptables"
+System Services,3.6.2 Ensure default deny firewall policy - Chain INPUT,A default deny all policy on connections ensures that any unconfigured network usage will be rejected.,With a default accept policy the firewall will accept any packet that is not configured to be denied. It is easier to white list acceptable usage than to black list unacceptable usage.,,"Run the following commands to implement a default DROP policy:
+
+# iptables -P INPUT DROP
+# iptables -P OUTPUT DROP
+# iptables -P FORWARD DROP"
+System Services,3.6.3 Ensure loopback traffic is configured,Configure the loopback interface to accept traffic. Configure all other interfaces to deny traffic to the loopback network (127.0.0.0/8).,"Loopback traffic is generated between processes on machine and is typically critical to operation of the system. The loopback interface is the only place that loopback network (127.0.0.0/8) traffic should be seen, all other interfaces should ignore traffic on this network as an anti-spoofing measure.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,"Run the following commands to implement the loopback rules:
+
+# iptables -A INPUT -i lo -j ACCEPT
+# iptables -A OUTPUT -o lo -j ACCEPT
+# iptables -A INPUT -s 127.0.0.0/8 -j DROP"
+System Services,3.6.4 Ensure outbound and established connections are configured,"Configure the firewall rules for new outbound, and established connections.","If rules are not in place for new outbound, and established connections all packets will be dropped by the default policy preventing network usage.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,
+System Services,3.6.5 Ensure firewall rules exist for all open ports,Any ports that have been opened on non-loopback addresses need firewall rules to govern traffic.,"Without a firewall rule configured for open ports default firewall policy will drop all packets to these ports.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,"For each port identified in the audit which does not have a firewall rule establish a proper rule for accepting inbound connections:
+
+# iptables -A INPUT -p  --dport  -m state --state NEW -j ACCEPT"
+System Services,3.7 Ensure wireless interfaces are disabled,Wireless networking is used when wired networks are unavailable. Red Hat Enterprise Linux 7 contains a wireless tool kit to allow system administrators to configure and use wireless networks.,"If wireless is not to be used, wireless devices can be disabled to reduce the potential attack surface.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",Many if not all laptop workstations and some desktop workstations will connect via wireless requiring these interfaces be enabled.,"Run the following command to disable any wireless interfaces:
+
+# ip link set  down
+
+Disable any wireless interfaces in your network configuration."
+Audit Logging,4.1.1.1 Ensure audit log storage size is configured,"Configure the maximum size of the audit log file. Once the log reaches the maximum size, it will be rotated and a new log file will be started.",It is important that an appropriate size is determined for log files so that they do not impact the system and audit data is not lost.,,"Set the following parameter in '/etc/audit/auditd.conf' in accordance with site policy:
+
+max_log_file ="
+Audit Logging,4.1.1.2 Ensure system is disabled when audit logs are full - 'space_left_action = email',The 'auditd' daemon can be configured to halt the system when the audit logs are full.,"In high security contexts, the risk of detecting unauthorized access or nonrepudiation exceeds the benefit of the system's availability.",,"Set the following parameters in '/etc/audit/auditd.conf:'
+
+space_left_action = email
+action_mail_acct = root
+admin_space_left_action = halt"
+Audit Logging,4.1.1.3 Ensure audit logs are not automatically deleted,The 'max_log_file_action' setting determines how to handle the audit log file reaching the max file size. A value of 'keep_logs' will rotate the logs but never delete old logs.,"In high security contexts, the benefits of maintaining a long audit history exceed the cost of storing the audit history.",,"Set the following parameter in '/etc/audit/auditd.conf:'
+
+max_log_file_action = keep_logs"
+Audit Logging,4.1.2 Ensure auditd service is enabled,Turn on the 'auditd' daemon to record system events.,The capturing of system events provides system administrators with information to allow them to determine if unauthorized access to their system is occurring.,,"Run the following command to enable 'auditd' :
+
+# systemctl enable auditd"
+Audit Logging,4.1.3 Ensure auditing for processes that start prior to auditd is enabled,Configure 'grub' so that processes that are capable of being audited can be audited even if they start up prior to 'auditd' startup.,"Audit events need to be captured on processes that start up prior to 'auditd', so that potential malicious activity cannot go undetected.",,"Edit '/etc/default/grub' and add 'audit=1' to 'GRUB_CMDLINE_LINUX':
+
+GRUB_CMDLINE_LINUX='audit=1'
+
+Run the following command to update the 'grub2' configuration:
+
+# grub2-mkconfig -o /boot/grub2/grub.cfg"
+Audit Logging,4.1.4 Ensure events that modify date and time information are collected - auditctl clock_settime (64-bit),"Capture events where the system date and/or time has been modified. The parameters in this section are set to determine if the 'adjtimex' (tune kernel clock), 'settimeofday' (Set time, using timeval and timezone structures) 'stime' (using seconds since 1/1/1970) or 'clock_settime' (allows for the setting of several internal clocks and timers) system calls have been executed and always write an audit record to the '/var/log/audit.log' file upon exit, tagging the records with the identifier 'time-change'",Unexpected changes in system date and/or time could be a sign of malicious activity on the system.,,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change
+-a always,exit -F arch=b32 -S clock_settime -k time-change
+-w /etc/localtime -p wa -k time-change
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change
+-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change
+-a always,exit -F arch=b64 -S clock_settime -k time-change
+-a always,exit -F arch=b32 -S clock_settime -k time-change
+-w /etc/localtime -p wa -k time-change"
+Audit Logging,4.1.5 Ensure events that modify user/group information are collected - auditctl '/etc/security/opasswd',"Record events affecting the 'group' , 'passwd' (user IDs), 'shadow' and 'gshadow' (passwords) or '/etc/security/opasswd' (old passwords, based on remember parameter in the PAM configuration) files. The parameters in this section will watch the files to see if they have been opened for write or have had attribute changes (e.g. permissions) and tag them with the identifier 'identity' in the audit log file.",Unexpected changes to these files could be an indication that the system has been compromised and that an unauthorized user is attempting to hide their activities or compromise additional accounts.,,"Add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /etc/group -p wa -k identity
+-w /etc/passwd -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/security/opasswd -p wa -k identity"
+Audit Logging,4.1.6 Ensure events that modify the system's network environment are collected - auditctl network-scripts,"Record changes to network environment files or system calls. The below parameters monitor the sethostname (set the systems host name) or setdomainname (set the systems domainname) system calls, and write an audit event on system call exit. The other parameters monitor the '/etc/issue' and '/etc/issue.net' files (messages displayed pre-login), '/etc/hosts' (file containing host names and associated IP addresses), '/etc/sysconfig/network' file and '/etc/sysconfig/network-scripts/' directory (containing network interface scripts and configurations).","Monitoring 'sethostname' and 'setdomainname' will identify potential unauthorized changes to host and domainname of a system. The changing of these names could potentially break security parameters that are set based on those names. The '/etc/hosts' file is monitored for changes in the file that can indicate an unauthorized intruder is trying to change machine associations with IP addresses and trick users and processes into connecting to unintended machines. Monitoring '/etc/issue' and '/etc/issue.net' is important, as intruders could put disinformation into those files and trick users into providing information to the intruder. Monitoring '/etc/sysconfig/network' and '/etc/sysconfig/network-scripts/' is important as it can show if network interfaces or scripts are being modified in a way that can lead to the machine becoming unavailable or compromised. All audit records will be tagged with the identifier 'system-locale.'",,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale
+-w /etc/issue -p wa -k system-locale
+-w /etc/issue.net -p wa -k system-locale
+-w /etc/hosts -p wa -k system-locale
+-w /etc/sysconfig/network -p wa -k system-locale
+-w /etc/sysconfig/network-scripts/ -p wa -k system-locale
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale
+-w /etc/issue -p wa -k system-locale
+-w /etc/issue.net -p wa -k system-locale
+-w /etc/hosts -p wa -k system-locale
+-w /etc/sysconfig/network -p wa -k system-locale
+-w /etc/sysconfig/network-scripts/ -p wa -k system-locale"
+Audit Logging,4.1.7 Ensure events that modify the system's Mandatory Access Controls are collected - auditctl /etc/selinux/,"Monitor SELinux mandatory access controls. The parameters below monitor any write access (potential additional, deletion or modification of files in the directory) or attribute changes to the /etc/selinux or directory.","Changes to files in these directories could indicate that an unauthorized user is attempting to modify access controls and change security contexts, leading to a compromise of the system.",,"Add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /etc/selinux/ -p wa -k MAC-policy
+-w /usr/share/selinux/ -p wa -k MAC-policy"
+Audit Logging,4.1.8 Ensure login and logout events are collected - /var/log/lastlog,Monitor login and logout events. The parameters below track changes to files associated with login/logout events. The file '/var/log/lastlog' maintain records of the last time a user successfully logged in. The '/var/run/failock' directory maintains records of login failures via the 'pam_faillock' module.,Monitoring login/logout events could provide a system administrator with information associated with brute force attacks against user logins.,,"Add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /var/log/lastlog -p wa -k logins
+-w /var/run/faillock/ -p wa -k logins"
+Audit Logging,4.1.9 Ensure session initiation information is collected - auditctl wtmp,"Monitor session initiation events. The parameters in this section track changes to the files associated with session events. The file '/var/run/utmp' file tracks all currently logged in users. All audit records will be tagged with the identifier 'session.' The '/var/log/wtmp' file tracks logins, logouts, shutdown, and reboot events. The file '/var/log/btmp' keeps track of failed login attempts and can be read by entering the command '/usr/bin/last -f /var/log/btmp' . All audit records will be tagged with the identifier 'logins.'","Monitoring these files for changes could alert a system administrator to logins occurring at unusual hours, which could indicate intruder activity (i.e. a user logging in at a time when they do not normally log in).",,"Add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /var/run/utmp -p wa -k session
+-w /var/log/wtmp -p wa -k logins
+-w /var/log/btmp -p wa -k logins"
+Audit Logging,4.1.10 Ensure discretionary access control permission modification events are collected - auditctl chown/fchown/fchownat/lchown (64-bit),"Monitor changes to file permissions, attributes, ownership and group. The parameters in this section track changes for system calls that affect file permissions and attributes. The 'chmod' , 'fchmod' and 'fchmodat' system calls affect the permissions associated with a file. The 'chown' , 'fchown' , 'fchownat' and 'lchown' system calls affect owner and group attributes on a file. The 'setxattr' , 'lsetxattr' , 'fsetxattr' (set extended file attributes) and 'removexattr' , 'lremovexattr' , 'fremovexattr' (remove extended file attributes) control extended file attributes. In all cases, an audit record will only be written for non-system user ids (auid >= 1000) and will ignore Daemon events (auid = 4294967295). All audit records will be tagged with the identifier 'perm_mod.'",Monitoring for changes in file attributes could alert a system administrator to activity that could indicate intruder activity or policy violation.,,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b64 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod"
+Audit Logging,4.1.11 Ensure unsuccessful unauthorized file access attempts are collected - auditctl EPERM (64-bit),"Monitor for unsuccessful attempts to access files. The parameters below are associated with system calls that control creation ( 'creat' ), opening ( 'open' , 'openat' ) and truncation ( 'truncate' , 'ftruncate' ) of files. An audit log record will only be written if the user is a non-privileged user (auid > = 1000), is not a Daemon event (auid=4294967295) and if the system call returned EACCES (permission denied to the file) or EPERM (some other permanent error associated with the specific system call). All audit records will be tagged with the identifier 'access.'","Failed attempts to open, create or truncate files could be an indication that an individual or process is trying to gain unauthorized access to the system.",,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access"
+Audit Logging,4.1.12 Ensure use of privileged commands is collected,Monitor privileged programs (those that have the setuid and/or setgid bit set on execution) to determine if unprivileged users are running these commands.,Execution of privileged commands by non-privileged users could be an indication of someone trying to gain unauthorized access to the system.,,"To remediate this issue, the system administrator will have to execute a find command to locate all the privileged programs and then add an audit line for each one of them. The audit parameters associated with this are as follows:
+
+'-F path=' $1 ''
+- will populate each file name found through the find command and processed by awk.
+'-F perm=x'
+- will write an audit record if the file is executed.
+'-F auid>=1000'
+- will write a record if the user executing the command is not a privileged user.
+'-F auid!= 4294967295'
+- will ignore Daemon events
+
+All audit records should be tagged with the identifier 'privileged'.
+
+Run the following command replacing <partition> with a list of partitions where programs can be executed from on your system:
+
+# find <partition> -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print ""-a always,exit -F path="" $1 "" -F perm=x -F auid>=1000 -F auid!=4294967295 -k privilege"" }'
+
+Add all resulting lines to the '/etc/audit/audit.rules' file."
+Audit Logging,4.1.13 Ensure successful file system mounts are collected,Monitor the use of the 'mount' system call. The 'mount' (and 'umount' ) system call controls the mounting and unmounting of file systems. The parameters below configure the system to create an audit record when the mount system call is used by a non-privileged user,"It is highly unusual for a non privileged user to 'mount' file systems to the system. While tracking 'mount' commands gives the system administrator evidence that external media may have been mounted (based on a review of the source of the mount and confirming it's an external media type), it does not conclusively indicate that data was exported to the media. System administrators who wish to determine if data were exported, would also have to track successful 'open' , 'creat' and 'truncate' system calls requiring write access to a file under the mount point of the external media file system. This could give a fair indication that a write occurred. The only way to truly prove it, would be to track successful writes to the external media. Tracking write system calls could quickly fill up the audit log and is not recommended. Recommendations on configuration options to track data export to media is beyond the scope of this document.",,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
+-a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts"
+Audit Logging,4.1.14 Ensure file deletion events by users are collected,"Monitor the use of system calls associated with the deletion or renaming of files and file attributes. This configuration statement sets up monitoring for the 'unlink' (remove a file), 'unlinkat' (remove a file attribute), 'rename' (rename a file) and 'renameat' (rename a file attribute) system calls and tags them with the identifier 'delete'.","Monitoring these calls from non-privileged users could provide a system administrator with evidence that inappropriate removal of files and file attributes associated with protected files is occurring. While this audit option will look at all events, system administrators will want to look for specific privileged files that are being deleted or altered.",,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete
+-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete"
+Audit Logging,4.1.15 Ensure changes to system administration scope (sudoers) is collected - auditctl sudoers.d,"Monitor scope changes for system administrations. If the system has been properly configured to force system administrators to log in as themselves first and then use the 'sudo' command to execute privileged commands, it is possible to monitor changes in scope. The file '/etc/sudoers' will be written to when the file or its attributes have changed. The audit records will be tagged with the identifier 'scope.'",Changes in the '/etc/sudoers' file can indicate that an unauthorized change has been made to scope of system administrator activity.,,"Add the following line to the '/etc/audit/audit.rules' file:
+
+-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d/ -p wa -k scope"
+Audit Logging,4.1.16 Ensure system administrator actions (sudolog) are collected,"Monitor the 'sudo' log file. If the system has been properly configured to disable the use of the 'su' command and force all administrators to have to log in first and then use 'sudo' to execute privileged commands, then all administrator commands will be logged to '/var/log/sudo.log' . Any time a command is executed, an audit event will be triggered as the '/var/log/sudo.log' file will be opened for write and the executed administration command will be written to the log.",Changes in '/var/log/sudo.log' indicate that an administrator has executed a command or the log file itself has been tampered with. Administrators will want to correlate the events written to the audit trail with the records written to '/var/log/sudo.log' to verify if unauthorized commands have been executed.,,"Add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /var/log/sudo.log -p wa -k actions"
+Audit Logging,4.1.17 Ensure kernel module loading and unloading is collected - insmod,"Monitor the loading and unloading of kernel modules. The programs 'insmod' (install a kernel module), 'rmmod' (remove a kernel module), and 'modprobe' (a more sophisticated program to load and unload modules, as well as some other features) control loading and unloading of modules. The 'init_module' (load a module) and 'delete_module' (delete a module) system calls control loading and unloading of modules. Any execution of the loading and unloading module programs and system calls will trigger an audit record with an identifier of 'modules'.","Monitoring the use of 'insmod' , 'rmmod' and 'modprobe' could provide system administrators with evidence that an unauthorized user loaded or unloaded a kernel module, possibly compromising the security of the system. Monitoring of the 'init_module' and 'delete_module' system calls would reflect an unauthorized user attempting to use a different program to load and unload modules.",,"For 32 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /sbin/insmod -p x -k modules
+-w /sbin/rmmod -p x -k modules
+-w /sbin/modprobe -p x -k modules
+-a always,exit -F arch=b32 -S init_module -S delete_module -k modules
+
+For 64 bit systems add the following lines to the '/etc/audit/audit.rules' file:
+
+-w /sbin/insmod -p x -k modules
+-w /sbin/rmmod -p x -k modules
+-w /sbin/modprobe -p x -k modules
+-a always,exit -F arch=b64 -S init_module -S delete_module -k modules"
+Audit Logging,4.1.18 Ensure the audit configuration is immutable,Set system audit so that audit rules cannot be modified with 'auditctl' . Setting the flag '-e 2' forces audit to be put in immutable mode. Audit changes can only be made on system reboot.,"In immutable mode, unauthorized users cannot execute changes to the audit system to potentially hide malicious activity and then put the audit rules back. Users would most likely notice a system reboot and that could alert administrators of an attempt to make unauthorized audit changes.",,"Add the following line to the end of the '/etc/audit/audit.rules' file.
+
+-e 2"
+Audit Logging,4.2.1.1 Ensure rsyslog Service is enabled,Once the 'rsyslog' package is installed it needs to be activated.,If the 'rsyslog' service is not activated the system may default to the 'syslogd' service or lack logging instead.,,"Run the following command to enable 'rsyslog' :
+
+# systemctl enable rsyslog"
+Audit Logging,4.2.1.2 Ensure logging is configured,The '/etc/rsyslog.conf' and '/etc/rsyslog.d/*.conf' files specifies rules for logging and which files are to be used to log certain classes of messages.,"A great deal of important security-related information is sent via 'rsyslog' (e.g., successful and failed su attempts, failed login attempts, root login attempts, etc.).
+
+NOTE: Nessus has not performed this check. Please review the benchmark to ensure target compliance.",,"Edit the following lines in the '/etc/rsyslog.conf' and '/etc/rsyslog.d/*.conf' files as appropriate for your environment:
+
+*.emerg :omusrmsg:*
+mail.* -/var/log/mail
+mail.info -/var/log/mail.info
+mail.warning -/var/log/mail.warn
+mail.err /var/log/mail.err
+news.crit -/var/log/news/news.crit
+news.err -/var/log/news/news.err
+news.notice -/var/log/news/news.notice
+*.=warning;*.=err -/var/log/warn
+*.crit /var/log/warn
+*.*;mail.none;news.none -/var/log/messages
+local0,local1.* -/var/log/localmessages
+local2,local3.* -/var/log/localmessages
+local4,local5.* -/var/log/localmessages
+local6,local7.* -/var/log/localmessages
+
+Run the following command to reload the 'rsyslogd' configuration:
+
+# pkill -HUP rsyslogd"
+Audit Logging,4.2.1.3 Ensure rsyslog default file permissions configured,rsyslog will create logfiles that do not already exist on the system. This setting controls what permissions will be applied to these newly created files.,It is important to ensure that log files have the correct permissions to ensure that sensitive data is archived and protected.,,"Edit the '/etc/rsyslog.conf' and '/etc/rsyslog.d/*.conf' files and set '$FileCreateMode' to '0640' or more restrictive:
+
+$FileCreateMode 0640"
+Audit Logging,4.2.1.4 Ensure rsyslog is configured to send logs to a remote log host,"The 'rsyslog' utility supports the ability to send logs it gathers to a remote log host running 'syslogd(8)' or to receive messages from remote hosts, reducing administrative overhead.","Storing log data on a remote host protects log integrity from local attacks. If an attacker gains root access on the local system, they could tamper with or remove log data that is stored on the local system",,"Edit the '/etc/rsyslog.conf' and '/etc/rsyslog.d/*.conf' files and add the following line (where 'loghost.example.com' is the name of your central log host).
+
+*.* @@loghost.example.com
+
+Run the following command to reload the 'rsyslogd' configuration:
+
+# pkill -HUP rsyslogd"
+Audit Logging,4.2.1.5 Ensure remote rsyslog messages are only accepted on designated log hosts. - imtcp.so,"By default, 'rsyslog' does not listen for log messages coming in from remote systems. The 'ModLoad' tells 'rsyslog' to load the 'imtcp.so' module so it can listen over a network via TCP. The 'InputTCPServerRun' option instructs 'rsyslogd' to listen on the specified TCP port.",The guidance in the section ensures that remote log hosts are configured to only accept 'rsyslog' data from hosts within the specified domain and that those systems that are not designed to be log hosts do not accept any remote 'rsyslog' messages. This provides protection from spoofed log data and ensures that system administrators are reviewing reasonably complete syslog data in a central location.,,"For hosts that are designated as log hosts, edit the '/etc/rsyslog.conf' file and un-comment or add the following lines:
+
+$ModLoad imtcp
+$InputTCPServerRun 514
+
+For hosts that are not designated as log hosts, edit the '/etc/rsyslog.conf' file and comment or remove the following lines:
+
+# $ModLoad imtcp
+# $InputTCPServerRun 514
+
+Run the following command to reload the 'rsyslogd' configuration:
+
+# pkill -HUP rsyslogd"
+Audit Logging,4.2.2.1 Ensure syslog-ng service is enabled,Once the 'syslog-ng' package is installed it needs to be activated.,"If the 'syslog-ng' service is not activated the system may default to the 'syslogd' service or lack logging instead.
+
+NOTE - Nessus has not performed this check. syslog-ng does not seem to be installed and this check is not applicable.",,"Run the following command to enable 'syslog-ng' :
+
+# systemctl enable syslog-ng"
+Audit Logging,4.2.2.2 Ensure logging is configured,The '/etc/syslog-ng/syslog-ng.conf' file specifies rules for logging and which files are to be used to log certain classes of messages.,"A great deal of important security-related information is sent via 'syslog-ng' (e.g., successful and failed su attempts, failed login attempts, root login attempts, etc.).
+
+NOTE - Nessus has not performed this check. syslog-ng does not seem to be installed and this check is not applicable.",,"Edit the log lines in the '/etc/syslog-ng/syslog-ng.conf' file as appropriate for your environment:
+
+log { source(src); source(chroots); filter(f_console); destination(console); };
+log { source(src); source(chroots); filter(f_console); destination(xconsole); };
+log { source(src); source(chroots); filter(f_newscrit); destination(newscrit); };
+log { source(src); source(chroots); filter(f_newserr); destination(newserr); };
+log { source(src); source(chroots); filter(f_newsnotice); destination(newsnotice); };
+log { source(src); source(chroots); filter(f_mailinfo); destination(mailinfo); };
+log { source(src); source(chroots); filter(f_mailwarn); destination(mailwarn); };
+log { source(src); source(chroots); filter(f_mailerr); destination(mailerr); };
+log { source(src); source(chroots); filter(f_mail); destination(mail); };
+log { source(src); source(chroots); filter(f_acpid); destination(acpid); flags(final); };
+log { source(src); source(chroots); filter(f_acpid_full); destination(devnull); flags(final); };
+log { source(src); source(chroots); filter(f_acpid_old); destination(acpid); flags(final); };
+log { source(src); source(chroots); filter(f_netmgm); destination(netmgm); flags(final); };
+log { source(src); source(chroots); filter(f_local); destination(localmessages); };
+log { source(src); source(chroots); filter(f_messages); destination(messages); };
+log { source(src); source(chroots); filter(f_iptables); destination(firewall); };
+log { source(src); source(chroots); filter(f_warn); destination(warn); };
+
+Run the following command to reload the 'syslog-ng' configuration:
+
+# pkill -HUP syslog-ng"
+Audit Logging,4.2.2.3 Ensure syslog-ng default file permissions configured,syslog-ng will create logfiles that do not already exist on the system. This setting controls what permissions will be applied to these newly created files.,"It is important to ensure that log files exist and have the correct permissions to ensure that sensitive 'syslog-ng' data is archived and protected.
+
+NOTE - Nessus has not performed this check. syslog-ng does not seem to be installed and this check is not applicable.",,"Edit the '/etc/syslog-ng/syslog-ng.conf' and set 'perm' option to '0640' or more restrictive:
+
+options { chain_hostnames(off); flush_lines(0); perm(0640); stats_freq(3600); threaded(yes); };"
+Audit Logging,4.2.2.4 Ensure syslog-ng is configured to send logs to a remote log host - destination logserver,"The 'syslog-ng' utility supports the ability to send logs it gathers to a remote log host or to receive messages from remote hosts, reducing administrative overhead.","Storing log data on a remote host protects log integrity from local attacks. If an attacker gains root access on the local system, they could tamper with or remove log data that is stored on the local system
+
+NOTE - Nessus has not performed this check. syslog-ng does not seem to be installed and this check is not applicable.",,"Edit the '/etc/syslog-ng/syslog-ng.conf' file and add the following lines (where 'logfile.example.com' is the name of your central log host).
+
+destination logserver { tcp('logfile.example.com' port(514)); };
+log { source(src); destination(logserver); };
+
+Run the following command to reload the 'syslog-ng' configuration:
+
+# pkill -HUP syslog-ng"
+Audit Logging,4.2.2.5 Ensure remote syslog-ng messages are only accepted on designated log hosts,"By default, 'syslog-ng' does not listen for log messages coming in from remote systems.","The guidance in the section ensures that remote log hosts are configured to only accept 'syslog-ng' data from hosts within the specified domain and that those systems that are not designed to be log hosts do not accept any remote 'syslog-ng' messages. This provides protection from spoofed log data and ensures that system administrators are reviewing reasonably complete syslog data in a central location.
+
+NOTE: Nessus has not performed this check. Please review the benchmark to ensure target compliance.",,"On designated log hosts edit the '/etc/syslog-ng/syslog-ng.conf' file and configure the following lines are appropriately:
+
+source net{ tcp(); };
+destination remote { file('/var/log/remote/${FULLHOST}-log'); };
+log { source(net); destination(remote); };
+
+On non designated log hosts edit the '/etc/syslog-ng/syslog-ng.conf' file and remove or edit any sources that accept network sourced log messages.
+
+Run the following command to reload the 'syslog-ng' configuration:
+
+# pkill -HUP syslog-ng"
+Audit Logging,4.2.3 Ensure rsyslog or syslog-ng is installed,"The 'rsyslog' and 'syslog-ng' software are recommended replacements to the original ' syslogd' daemon which provide improvements over 'syslogd' , such as connection-oriented (i.e. TCP) transmission of logs, the option to log to database formats, and the encryption of log data en route to a central logging server.","The security enhancements of 'rsyslog' and 'syslog-ng' such as connection-oriented (i.e. TCP) transmission of logs, the option to log to database formats, and the encryption of log data en route to a central logging server) justify installing and configuring the package.",,"Install 'rsyslog' or 'syslog-ng' using one of the following commands:
+
+# yum install rsyslog
+# yum install syslog-ng"
+Audit Logging,4.2.4 Ensure permissions on all logfiles are configured,"Log files stored in /var/log/ contain logged information from many services on the system, or on log hosts others as well.",It is important to ensure that log files have the correct permissions to ensure that sensitive data is archived and protected.,,
+Audit Logging,4.3 Ensure logrotate is configured,The system includes the capability of rotating log files regularly to avoid filling up the system with logs or making the logs unmanageable large. The file '/etc/logrotate.d/syslog' is the configuration file used to rotate log files created by 'syslog' or 'rsyslog'.,"By keeping the log files smaller and more manageable, a system administrator can easily archive these files to another system and spend less time looking through inordinately large log files.
+
+NOTE: Nessus has not performed this check. Please review the benchmark to ensure target compliance.",,Edit '/etc/logrotate.conf' and '/etc/logrotate.d/*' to ensure logs are rotated according to site policy.
+Access Controls,5.1.1 Ensure cron daemon is enabled,The 'cron' daemon is used to execute batch jobs on the system.,"While there may not be user jobs that need to be run on the system, the system does have maintenance jobs that may include security monitoring that have to run, and 'cron' is used to execute them.",,"Run the following command to enable 'cron' :
+
+# systemctl enable crond"
+Access Controls,5.1.2 Ensure permissions on /etc/crontab are configured,The '/etc/crontab' file is used by 'cron' to control its own jobs. The commands in this item make sure that root is the user and group owner of the file and that only the owner can access the file.,This file contains information on what system jobs are run by cron. Write access to these files could provide unprivileged users with the ability to elevate their privileges. Read access to these files could provide users with the ability to gain insight on system jobs that run on the system and could provide them a way to gain unauthorized privileged access.,,"Run the following commands to set ownership and permissions on '/etc/crontab' :
+
+# chown root:root /etc/crontab
+# chmod og-rwx /etc/crontab"
+Access Controls,5.1.3 Ensure permissions on /etc/cron.hourly are configured,"This directory contains system 'cron' jobs that need to run on an hourly basis. The files in this directory cannot be manipulated by the 'crontab' command, but are instead edited by system administrators using a text editor. The commands below restrict read/write and search access to user and group root, preventing regular users from accessing this directory.",Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls.,,"Run the following commands to set ownership and permissions on '/etc/cron.hourly' :
+
+# chown root:root /etc/cron.hourly
+# chmod og-rwx /etc/cron.hourly"
+Access Controls,5.1.4 Ensure permissions on /etc/cron.daily are configured,"The '/etc/cron.daily' directory contains system cron jobs that need to run on a daily basis. The files in this directory cannot be manipulated by the 'crontab' command, but are instead edited by system administrators using a text editor. The commands below restrict read/write and search access to user and group root, preventing regular users from accessing this directory.",Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls.,,"Run the following commands to set ownership and permissions on '/etc/cron.daily' :
+
+# chown root:root /etc/cron.daily
+# chmod og-rwx /etc/cron.daily"
+Access Controls,5.1.5 Ensure permissions on /etc/cron.weekly are configured,"The '/etc/cron.weekly' directory contains system cron jobs that need to run on a weekly basis. The files in this directory cannot be manipulated by the 'crontab' command, but are instead edited by system administrators using a text editor. The commands below restrict read/write and search access to user and group root, preventing regular users from accessing this directory.",Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls.,,"Run the following commands to set ownership and permissions on '/etc/cron.weekly' :
+
+# chown root:root /etc/cron.weekly
+# chmod og-rwx /etc/cron.weekly"
+Access Controls,5.1.6 Ensure permissions on /etc/cron.monthly are configured,"The '/etc/cron.monthly' directory contains system cron jobs that need to run on a monthly basis. The files in this directory cannot be manipulated by the 'crontab' command, but are instead edited by system administrators using a text editor. The commands below restrict read/write and search access to user and group root, preventing regular users from accessing this directory.",Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls.,,"Run the following commands to set ownership and permissions on '/etc/cron.monthly' :
+
+# chown root:root /etc/cron.monthly
+# chmod og-rwx /etc/cron.monthly"
+Access Controls,5.1.7 Ensure permissions on /etc/cron.d are configured,"The '/etc/cron.d' directory contains system 'cron' jobs that need to run in a similar manner to the hourly, daily weekly and monthly jobs from '/etc/crontab' , but require more granular control as to when they run. The files in this directory cannot be manipulated by the 'crontab' command, but are instead edited by system administrators using a text editor. The commands below restrict read/write and search access to user and group root, preventing regular users from accessing this directory.",Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls.,,"Run the following commands to set ownership and permissions on '/etc/cron.d' :
+
+# chown root:root /etc/cron.d
+# chmod og-rwx /etc/cron.d"
+Access Controls,5.1.8 Ensure at/cron is restricted to authorized users - cron.deny,"Configure '/etc/cron.allow' and '/etc/at.allow' to allow specific users to use these services. If '/etc/cron.allow' or '/etc/at.allow' do not exist, then '/etc/at.deny' and '/etc/cron.deny' are checked. Any user not specifically defined in those files is allowed to use at and cron. By removing the files, only users in '/etc/cron.allow' and '/etc/at.allow' are allowed to use at and cron. Note that even though a given user is not listed in 'cron.allow' , cron jobs can still be run as that user. The 'cron.allow' file only controls administrative access to the crontab command for scheduling and modifying cron jobs.","On many systems, only the system administrator is authorized to schedule 'cron' jobs. Using the 'cron.allow' file to control who can run 'cron' jobs enforces this policy. It is easier to manage an allow list than a deny list. In a deny list, you could potentially add a user ID to the system and forget to add it to the deny files.",,"Run the following commands to remove '/etc/cron.deny' and '/etc/at.deny' and create and set permissions and ownership for '/etc/cron.allow' and '/etc/at.allow' :
+
+# rm /etc/cron.deny
+# rm /etc/at.deny
+# touch /etc/cron.allow
+# touch /etc/at.allow
+# chmod og-rwx /etc/cron.allow
+# chmod og-rwx /etc/at.allow
+# chown root:root /etc/cron.allow
+# chown root:root /etc/at.allow"
+Access Controls,5.2.1 Ensure permissions on /etc/ssh/sshd_config are configured,The '/etc/ssh/sshd_config' file contains configuration specifications for 'sshd'. The command below sets the owner and group of the file to root.,The '/etc/ssh/sshd_config' file needs to be protected from unauthorized changes by non-privileged users.,,"Run the following commands to set ownership and permissions on '/etc/ssh/sshd_config':
+
+# chown root:root /etc/ssh/sshd_config
+# chmod og-rwx /etc/ssh/sshd_config"
+Access Controls,5.2.2 Ensure SSH Protocol is set to 2,SSH supports two different and incompatible protocols: SSH1 and SSH2. SSH1 was the original protocol and was subject to security issues. SSH2 is more advanced and secure.,SSH v1 suffers from insecurities that do not affect SSH v2.,,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+Protocol 2"
+Access Controls,5.2.3 Ensure SSH LogLevel is set to INFO,The 'INFO' parameter specifies that login and logout activity will be logged.,"SSH provides several logging levels with varying amounts of verbosity. 'DEBUG' is specifically _not_ recommended other than strictly for debugging SSH communications since it provides so much data that it is difficult to identify important security information. 'INFO' level is the basic level that only records login activity of SSH users. In many situations, such as Incident Response, it is important to determine when a particular user was active on a system. The logout record can eliminate those users who disconnected, which helps narrow the field.",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+LogLevel INFO"
+Access Controls,5.2.4 Ensure SSH X11 forwarding is disabled,The X11Forwarding parameter provides the ability to tunnel X11 traffic through the connection to enable remote graphic connections.,"Disable X11 forwarding unless there is an operational requirement to use X11 applications directly. There is a small risk that the remote X11 servers of users who are logged in via SSH with X11 forwarding could be compromised by other users on the X11 server. Note that even if X11 forwarding is disabled, users can always install their own forwarders.",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+X11Forwarding no"
+Access Controls,5.2.5 Ensure SSH MaxAuthTries is set to 4 or less,"The 'MaxAuthTries' parameter specifies the maximum number of authentication attempts permitted per connection. When the login failure count reaches half the number, error messages will be written to the 'syslog' file detailing the login failure.","Setting the 'MaxAuthTries' parameter to a low number will minimize the risk of successful brute force attacks to the SSH server. While the recommended setting is 4, set the number based on site policy.",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+MaxAuthTries 4"
+Access Controls,5.2.6 Ensure SSH IgnoreRhosts is enabled,The 'IgnoreRhosts' parameter specifies that '.rhosts' and '.shosts' files will not be used in 'RhostsRSAAuthentication' or 'HostbasedAuthentication' .,Setting this parameter forces users to enter a password when authenticating with ssh.,,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+IgnoreRhosts yes"
+Access Controls,5.2.7 Ensure SSH HostbasedAuthentication is disabled,"The 'HostbasedAuthentication' parameter specifies if authentication is allowed through trusted hosts via the user of '.rhosts' , or '/etc/hosts.equiv' , along with successful public key client host authentication. This option only applies to SSH Protocol Version 2.","Even though the '.rhosts' files are ineffective if support is disabled in '/etc/pam.conf' , disabling the ability to use '.rhosts' files in SSH provides an additional layer of protection .",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+HostbasedAuthentication no"
+Access Controls,5.2.8 Ensure SSH root login is disabled,The 'PermitRootLogin' parameter specifies if the root user can log in using ssh(1). The default is no.,"Disallowing root logins over SSH requires system admins to authenticate using their own individual account, then escalating to root via 'sudo' or 'su' . This in turn limits opportunity for non-repudiation and provides a clear audit trail in the event of a security incident",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+PermitRootLogin no"
+Access Controls,5.2.9 Ensure SSH PermitEmptyPasswords is disabled,The 'PermitEmptyPasswords' parameter specifies if the SSH server allows login to accounts with empty password strings.,Disallowing remote shell access to accounts that have an empty password reduces the probability of unauthorized access to the system,,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+PermitEmptyPasswords no"
+Access Controls,5.2.10 Ensure SSH PermitUserEnvironment is disabled,The 'PermitUserEnvironment' option allows users to present environment options to the 'ssh' daemon.,Permitting users the ability to set environment variables through the SSH daemon could potentially allow users to bypass security controls (e.g. setting an execution path that has 'ssh' executing trojan'd programs),,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+PermitUserEnvironment no"
+Access Controls,5.2.11 Ensure only approved MAC algorithms are used,This variable limits the types of MAC algorithms that SSH can use during communication.,"MD5 and 96-bit MAC algorithms are considered weak and have been shown to increase exploitability in SSH downgrade attacks. Weak algorithms continue to have a great deal of attention as a weak spot that can be exploited with expanded computing power. An attacker that breaks the algorithm could take advantage of a MiTM position to decrypt the SSH tunnel and capture credentials and information
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,"Edit the '/etc/ssh/sshd_config' file to set the parameter in accordance with site policy. The following includes all supported and accepted MACs:
+
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
+Access Controls,5.2.12 Ensure SSH Idle Timeout Interval is configured - ClientAliveCountMax,"The two options 'ClientAliveInterval' and 'ClientAliveCountMax' control the timeout of ssh sessions. When the 'ClientAliveInterval' variable is set, ssh sessions that have no activity for the specified length of time are terminated. When the 'ClientAliveCountMax' variable is set, 'sshd' will send client alive messages at every 'ClientAliveInterval' interval. When the number of consecutive client alive messages are sent with no response from the client, the 'ssh' session is terminated. For example, if the 'ClientAliveInterval' is set to 15 seconds and the 'ClientAliveCountMax' is set to 3, the client 'ssh' session will be terminated after 45 seconds of idle time.","Having no timeout value associated with a connection could allow an unauthorized user access to another user's 'ssh' session (e.g. user walks away from their computer and doesn't lock the screen). Setting a timeout value at least reduces the risk of this happening..
+
+While the recommended setting is 300 seconds (5 minutes), set this timeout value based on site policy. The recommended setting for 'ClientAliveCountMax' is 0. In this case, the client session will be terminated after 5 minutes of idle time and no keepalive messages will be sent.",,"Edit the '/etc/ssh/sshd_config' file to set the parameters according to site policy:
+
+ClientAliveInterval 300
+ClientAliveCountMax 0"
+Access Controls,5.2.13 Ensure SSH LoginGraceTime is set to one minute or less,The 'LoginGraceTime' parameter specifies the time allowed for successful authentication to the SSH server. The longer the Grace period is the more open unauthenticated connections can exist. Like other session controls in this session the Grace Period should be limited to appropriate organizational limits to ensure the service is available for needed access.,"Setting the 'LoginGraceTime' parameter to a low number will minimize the risk of successful brute force attacks to the SSH server. It will also limit the number of concurrent unauthenticated connections While the recommended setting is 60 seconds (1 Minute), set the number based on site policy.",,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+LoginGraceTime 60"
+Access Controls,5.2.14 Ensure SSH access is limited,"There are several options available to limit which users and group can access the system via SSH. It is recommended that at least one of the following options be leveraged: 'AllowUsers'
+
+The 'AllowUsers' variable gives the system administrator the option of allowing specific users to 'ssh' into the system. The list consists of space separated user names. Numeric user IDs are not recognized with this variable. If a system administrator wants to restrict user access further by only allowing the allowed users to log in from a particular host, the entry can be specified in the form of user@host. 'AllowGroups'
+
+The 'AllowGroups' variable gives the system administrator the option of allowing specific groups of users to 'ssh' into the system. The list consists of space separated group names. Numeric group IDs are not recognized with this variable. 'DenyUsers'
+
+The 'DenyUsers' variable gives the system administrator the option of denying specific users to 'ssh' into the system. The list consists of space separated user names. Numeric user IDs are not recognized with this variable. If a system administrator wants to restrict user access further by specifically denying a user's access from a particular host, the entry can be specified in the form of user@host. 'DenyGroups'
+
+The 'DenyGroups' variable gives the system administrator the option of denying specific groups of users to 'ssh' into the system. The list consists of space separated group names. Numeric group IDs are not recognized with this variable.",Restricting which users can remotely access the system via SSH will help ensure that only authorized users access the system.,,"Edit the '/etc/ssh/sshd_config' file to set one or more of the parameter as follows:
+
+AllowUsers
+AllowGroups
+DenyUsers
+DenyGroups"
+Access Controls,5.2.15 Ensure SSH warning banner is configured,"The 'Banner' parameter specifies a file whose contents must be sent to the remote user before authentication is permitted. By default, no banner is displayed.",Banners are used to warn connecting users of the particular site's policy regarding connection. Presenting a warning message prior to the normal user login may assist the prosecution of trespassers on the computer system.,,"Edit the '/etc/ssh/sshd_config' file to set the parameter as follows:
+
+Banner /etc/issue.net"
+Access Controls,5.3.1 Ensure password creation requirements are configured - ocredit,"The 'pam_pwquality.so' module checks the strength of passwords. It performs checks such as making sure a password is not a dictionary word, it is a certain length, contains a mix of characters (e.g. alphabet, numeric, other) and more. The following are definitions of the 'pam_pwquality' .so options.
+
+- 'try_first_pass' - retrieve the password from a previous stacked PAM module. If not available, then prompt the user for a password. - 'retry=3' - Allow 3 tries before sending back a failure.
+
+The following options are set in the '/etc/security/pwquality.conf' file:
+
+- 'minlen = 14' - password must be 14 characters or more - 'dcredit = -1' - provide at least one digit - 'ucredit = -1' - provide at least one uppercase character - 'ocredit = -1' - provide at least one special character - 'lcredit = -1' - provide at least one lowercase character
+
+The settings shown above are one possible policy. Alter these values to conform to your own organization's password policies.",Strong passwords protect systems from being hacked through brute force methods.,,"Edit the '/etc/pam.d/password-auth' and '/etc/pam.d/system-auth' files to include the appropriate options for 'pam_pwquality.so' and to conform to site policy:
+
+password requisite pam_pwquality.so try_first_pass retry=3
+
+Edit '/etc/security/pwquality.conf' to add or update the following settings to conform to site policy:
+
+minlen = 14
+dcredit = -1
+ucredit = -1
+ocredit = -1
+lcredit = -1"
+Access Controls,5.3.2 Ensure lockout for failed password attempts is configured - system-auth 'auth sufficient pam_faillock.so',"Lock out users after _n_ unsuccessful consecutive login attempts. The first sets of changes are made to the PAM configuration files. The second set of changes are applied to the program specific PAM configuration file. The second set of changes must be applied to each program that will lock out users. Check the documentation for each secondary program for instructions on how to configure them to work with PAM.
+
+Set the lockout number to the policy in effect at your site.",Locking out user IDs after _n_ unsuccessful consecutive login attempts mitigates brute force password attacks against your systems.,,"Edit the '/etc/pam.d/password-auth' and '/etc/pam.d/system-auth' files and add the following 'pam_faillock.so' lines surrounding a 'pam_unix.so' line modify the 'pam_unix.so' is '[success=1 default=bad]' as listed in both:
+
+auth required pam_faillock.so preauth audit silent deny=5 unlock_time=900
+auth [success=1 default=bad] pam_unix.so
+auth [default=die] pam_faillock.so authfail audit deny=5 unlock_time=900
+auth sufficient pam_faillock.so authsucc audit deny=5 unlock_time=900"
+Access Controls,5.3.3 Ensure password reuse is limited - password-auth,The '/etc/security/opasswd' file stores the users' old passwords and can be checked to ensure that users are not recycling recent passwords.,"Forcing users not to reuse their past 5 passwords make it less likely that an attacker will be able to guess the password.
+
+Note that these change only apply to accounts configured on the local system.",,"Edit the '/etc/pam.d/password-auth' and '/etc/pam.d/system-auth' files to include the 'remember' option and conform to site policy as shown:
+
+password sufficient pam_unix.so remember=5
+
+or
+
+password required pam_pwhistory.so remember=5"
+Access Controls,5.3.4 Ensure password hashing algorithm is SHA-512 - password-auth,The commands below change password encryption from 'md5' to 'sha512' (a much stronger hashing algorithm). All existing accounts will need to perform a password change to upgrade the stored hashes to the new algorithm.,"The SHA-512 algorithm provides much stronger hashing than MD5, thus providing additional protection to the system by increasing the level of effort for an attacker to successfully determine passwords.
+
+Note that these change only apply to accounts configured on the local system.",,"Edit the '/etc/pam.d/password-auth' and '/etc/pam.d/system-auth' files to include the 'sha512' option for 'pam_unix.so' as shown:
+
+password sufficient pam_unix.so sha512"
+Access Controls,5.4.1.1 Ensure password expiration is 365 days or less,The 'PASS_MAX_DAYS' parameter in '/etc/login.defs' allows an administrator to force passwords to expire once they reach a defined age. It is recommended that the 'PASS_MAX_DAYS' parameter be set to less than or equal to 365 days.,"The window of opportunity for an attacker to leverage compromised credentials or successfully compromise credentials via an online brute force attack is limited by the age of the password. Therefore, reducing the maximum age of a password also reduces an attacker's window of opportunity.",,"Set the 'PASS_MAX_DAYS' parameter to conform to site policy in '/etc/login.defs' :
+
+PASS_MAX_DAYS 90
+
+Modify user parameters for all users with a password set to match:
+
+# chage --maxdays 90"
+Access Controls,5.4.1.2 Ensure minimum days between password changes is 7 or more,The 'PASS_MIN_DAYS' parameter in '/etc/login.defs' allows an administrator to prevent users from changing their password until a minimum number of days have passed since the last time the user changed their password. It is recommended that 'PASS_MIN_DAYS' parameter be set to 7 or more days.,"By restricting the frequency of password changes, an administrator can prevent users from repeatedly changing their password in an attempt to circumvent password reuse controls.",,"Set the 'PASS_MIN_DAYS' parameter to 7 in '/etc/login.defs' :
+
+PASS_MIN_DAYS 7
+
+Modify user parameters for all users with a password set to match:
+
+# chage --mindays 7"
+Access Controls,5.4.1.3 Ensure password expiration warning days is 7 or more,The 'PASS_WARN_AGE' parameter in '/etc/login.defs' allows an administrator to notify users that their password will expire in a defined number of days. It is recommended that the 'PASS_WARN_AGE' parameter be set to 7 or more days.,Providing an advance warning that a password will be expiring gives users time to think of a secure password. Users caught unaware may choose a simple password or write it down where it may be discovered.,,"Set the 'PASS_WARN_AGE' parameter to 7 in '/etc/login.defs' :
+
+PASS_WARN_AGE 7
+
+Modify user parameters for all users with a password set to match:
+
+# chage --warndays 7"
+Access Controls,5.4.1.4 Ensure inactive password lock is 30 days or less,User accounts that have been inactive for over a given period of time can be automatically disabled. It is recommended that accounts that are inactive for 30 days after password expiration be disabled.,Inactive accounts pose a threat to system security since the users are not logging in to notice failed login attempts or other anomalies.,,"Run the following command to set the default password inactivity period to 30 days:
+
+# useradd -D -f 30
+
+Modify user parameters for all users with a password set to match:
+
+# chage --inactive 30"
+Access Controls,5.4.1.5 Ensure all users last password change date is in the past,All users should have a password change date in the past.,"If a users recorded password change date is in the future then they could bypass any set password expiration.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,"Investigate any users with a password change date in the future and correct them. Locking the account, expiring the password, or resetting the password manually may be appropriate."
+Access Controls,5.4.2 Ensure system accounts are non-login,There are a number of accounts provided with Red Hat 7 that are used to manage applications and are not intended to provide an interactive shell.,"It is important to make sure that accounts that are not being used by regular users are prevented from being used to provide an interactive shell. By default Red Hat 7 sets the password field for these accounts to an invalid string, but it is also recommended that the shell field in the password file be set to '/sbin/nologin' . This prevents the account from potentially being used to run any commands.",,"Set the shell for any accounts returned by the audit script to '/sbin/nologin' :
+
+# usermod -s /sbin/nologin
+
+The following script will automatically set all user shells required to '/sbin/nologin' and lock the 'sync' , 'shutdown' , and 'halt' users:
+
+#!/bin/bash
+
+for user in 'awk -F: '($3 < 1000) {print $1 }' /etc/passwd' ; do
+ if [ $user != 'root' ]; then
+ usermod -L $user
+ if [ $user != 'sync' ] && [ $user != 'shutdown' ] & then
+ usermod -s /sbin/nologin $user
+ fi
+ fi
+done"
+Access Controls,5.4.3 Ensure default group for the root account is GID 0,The usermod command can be used to specify which group the root user belongs to. This affects permissions of files that are created by the root user.,Using GID 0 for the 'root' account helps prevent 'root' -owned files from accidentally becoming accessible to non-privileged users.,,"Run the following command to set the 'root' user default group to GID '0' :
+
+# usermod -g 0 root"
+Access Controls,5.4.4 Ensure default user umask is 027 or more restrictive - /etc/profile /etc/profile.d/*.sh,"The default 'umask' determines the permissions of files created by users. The user creating the file has the discretion of making their files and directories readable by others via the chmod command. Users who wish to allow their files and directories to be readable by others by default may choose a different default umask by inserting the 'umask' command into the standard shell configuration files ( '.profile' , '.bashrc' , etc.) in their home directories.","Setting a very secure default value for 'umask' ensures that users make a conscious choice about their file permissions. A default 'umask' setting of '077' causes files and directories created by users to not be readable by any other user on the system. A 'umask' of '027' would make files and directories readable by users in the same Unix group, while a 'umask' of '022' would make files readable by every user on the system.",,"Edit the '/etc/bashrc', '/etc/profile' and '/etc/profile.d/*.sh' files (and the appropriate files for any other shell supported on your system) and add or edit any umask parameters as follows:
+
+umask 027"
+Access Controls,5.4.5 Ensure default user shell timeout is 900 seconds or less - /etc/profile,The default 'TMOUT' determines the shell timeout for users. The TMOUT value is measured in seconds.,Having no timeout value associated with a shell could allow an unauthorized user access to another user's shell session (e.g. user walks away from their computer and doesn't lock the screen). Setting a timeout value at least reduces the risk of this happening.,,"Edit the '/etc/bashrc' and '/etc/profile' files (and the appropriate files for any other shell supported on your system) and add or edit any umask parameters as follows:
+
+TMOUT=600"
+Access Controls,5.5 Ensure root login is restricted to system console,The file '/etc/securetty' contains a list of valid terminals that may be logged in directly as root.,"Since the system console has special properties to handle emergency situations, it is important to ensure that the console is in a physically secure location and that unauthorized consoles have not been defined.",,Remove entries for any consoles that are not in a physically secure location.
+Access Controls,5.6 Ensure access to the su command is restricted - pam_wheel.so,"The 'su' command allows a user to run a command or shell as another user. The program has been superseded by 'sudo' , which allows for more granular control over privileged access. Normally, the 'su' command can be executed by any user. By uncommenting the 'pam_wheel.so' statement in '/etc/pam.d/su' , the 'su' command will only allow users in the wheel group to execute 'su' .","Restricting the use of 'su' , and using 'sudo' in its place, provides system administrators better control of the escalation of user privileges to execute privileged commands. The sudo utility also provides a better logging and audit mechanism, as it can log each command executed via 'sudo' , whereas 'su' can only record that a user executed the 'su' program.",,"Add the following line to the '/etc/pam.d/su' file:
+
+auth required pam_wheel.so use_uid
+
+Create a comma separated list of users in the wheel statement in the '/etc/group' file:
+
+wheel:x:10:root,"
+Filesystem Permissions,6.1.1 Audit system file permissions,"The RPM package manager has a number of useful options. One of these, the '--verify' (or '-V' ) option, can be used to verify that system packages are correctly installed. The '--verify' option can be used to verify a particular package or to verify all system packages. If no output is returned, the package is installed correctly. The following table describes the meaning of output from the verify option:
+
+Code Meaning S File size differs. M File mode differs (includes permissions and file type). 5 The MD5 checksum differs. D The major and minor version numbers differ on a device file. L A mismatch occurs in a link. U The file ownership differs. G The file group owner differs. T The file time (mtime) differs.
+
+The 'rpm -qf' command can be used to determine which package a particular file belongs to. For example the following commands determines which package the '/bin/bash' file belongs to:
+
+# rpm -qf /bin/bash bash-4.1.2-29.el6.x86_64
+
+To verify the settings for the package that controls the '/bin/bash' file, run the following:
+
+# rpm -V bash-4.1.2-29.el6.x86_64 .M....... /bin/bash
+
+Note that you can feed the output of the 'rpm -qf' command to the 'rpm -V' command:
+
+# rpm -V 'rpm -qf /etc/passwd' .M...... c /etc/passwd S.5....T c /etc/printcap",It is important to confirm that packaged system files and directories are maintained with the permissions they were intended to have from the OS vendor.,,
+Filesystem Permissions,6.1.2 Ensure permissions on /etc/passwd are configured,The '/etc/passwd' file contains user account information that is used by many system utilities and therefore must be readable for these utilities to operate.,"It is critical to ensure that the '/etc/passwd' file is protected from unauthorized write access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following command to set permissions on '/etc/passwd' :
+
+# chown root:root /etc/passwd
+# chmod 644 /etc/passwd"
+Filesystem Permissions,6.1.3 Ensure permissions on /etc/shadow are configured,"The '/etc/shadow' file is used to store the information about user accounts that is critical to the security of those accounts, such as the hashed password and other security information.","If attackers can gain read access to the '/etc/shadow' file, they can easily run a password cracking program against the hashed password to break it. Other security information that is stored in the '/etc/shadow' file (such as expiration) could also be useful to subvert the user accounts.",,"Run the following commands to set permissions on '/etc/shadow' :
+
+# chown root:root /etc/shadow
+# chmod 000 /etc/shadow"
+Filesystem Permissions,6.1.4 Ensure permissions on /etc/group are configured,The '/etc/group' file contains a list of all the valid groups defined in the system. The command below allows read/write access for root and read access for everyone else.,"The '/etc/group' file needs to be protected from unauthorized changes by non-privileged users, but needs to be readable as this information is used with many non-privileged programs.",,"Run the following command to set permissions on '/etc/group' :
+
+# chown root:root /etc/group
+# chmod 644 /etc/group"
+Filesystem Permissions,6.1.5 Ensure permissions on /etc/gshadow are configured,"The '/etc/gshadow' file is used to store the information about groups that is critical to the security of those accounts, such as the hashed password and other security information.","If attackers can gain read access to the '/etc/gshadow' file, they can easily run a password cracking program against the hashed password to break it. Other security information that is stored in the '/etc/gshadow' file (such as group administrators) could also be useful to subvert the group.",,"Run the following chown to set permissions on '/etc/gshadow' :
+
+# chown root:root /etc/gshadow
+# chmod 000 /etc/gshadow"
+Filesystem Permissions,6.1.6 Ensure permissions on /etc/passwd- are configured,The '/etc/passwd-' file contains backup user account information.,"It is critical to ensure that the '/etc/passwd-' file is protected from unauthorized access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following command to set permissions on '/etc/passwd-' :
+
+# chown root:root /etc/passwd-
+# chmod u-x,go-wx /etc/passwd-"
+Filesystem Permissions,6.1.7 Ensure permissions on /etc/shadow- are configured,"The '/etc/shadow-' file is used to store backup information about user accounts that is critical to the security of those accounts, such as the hashed password and other security information.","It is critical to ensure that the '/etc/shadow-' file is protected from unauthorized access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following commands to set permissions on '/etc/shadow-':
+
+# chown root:root /etc/shadow-
+# chmod 000 /etc/shadow-"
+Filesystem Permissions,6.1.8 Ensure permissions on /etc/group- are configured,The '/etc/group-' file contains a backup list of all the valid groups defined in the system.,"It is critical to ensure that the '/etc/group-' file is protected from unauthorized access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following command to set permissions on '/etc/group-' :
+
+# chown root:root /etc/group-
+# chmod u-x,go-wx /etc/group-"
+Filesystem Permissions,6.1.9 Ensure permissions on /etc/gshadow- are configured,"The '/etc/gshadow-' file is used to store backup information about groups that is critical to the security of those accounts, such as the hashed password and other security information.","It is critical to ensure that the '/etc/gshadow-' file is protected from unauthorized access. Although it is protected by default, the file permissions could be changed either inadvertently or through malicious actions.",,"Run the following commands to set permissions on '/etc/gshadow-' :
+
+# chown root:root /etc/gshadow-
+# chmod 000 /etc/gshadow-"
+Filesystem Permissions,6.1.10 Ensure no world writable files exist,Unix-based systems support variable settings to control access to files. World writable files are the least secure. See the 'chmod(2)' man page for more information.,Data in world-writable files can be modified and compromised by any user on the system. World writable files may also indicate an incorrectly written script or program that could potentially be the cause of a larger compromise to the system's integrity.,,"Removing write access for the 'other' category ( 'chmod o-w ' ) is advisable, but always consult relevant vendor documentation to avoid breaking any application dependencies on a given file."
+Filesystem Permissions,6.1.11 Ensure no unowned files or directories exist,Sometimes when administrators delete users from the password file they neglect to remove all files owned by those users from the system.,"A new user who is assigned the deleted user's user ID or group ID may then end up 'owning' these files, and thus have more access on the system than was intended.",,"Locate files that are owned by users or groups not listed in the system configuration files, and reset the ownership of these files to some active user on the system as appropriate."
+Filesystem Permissions,6.1.12 Ensure no ungrouped files or directories exist,Sometimes when administrators delete users or groups from the system they neglect to remove all files owned by those users or groups.,"A new user who is assigned the deleted user's user ID or group ID may then end up 'owning' these files, and thus have more access on the system than was intended.",,"Locate files that are owned by users or groups not listed in the system configuration files, and reset the ownership of these files to some active user on the system as appropriate."
+Filesystem Permissions,6.1.13 Audit SUID executables,"The owner of a file can set the file's permissions to run with the owner's or group's permissions, even if the user running the program is not the owner or a member of the group. The most common reason for a SUID program is to enable users to perform functions (such as changing their password) that require root privileges.
+
+Rationale:
+
+There are valid reasons for SUID programs, but it is important to identify and review such programs to ensure they are legitimate.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.
+
+The owner of a file can set the file's permissions to run with the owner's or group's permissions, even if the user running the program is not the owner or a member of the group. The most common reason for a SUID program is to enable users to perform functions (such as changing their password) that require root privileges.","There are valid reasons for SUID programs, but it is important to identify and review such programs to ensure they are legitimate.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,Ensure that no rogue SUID programs have been introduced into the system. Review the files returned by the action in the Audit section and confirm the integrity of these binaries.
+Filesystem Permissions,6.1.14 Audit SGID executables,"The owner of a file can set the file's permissions to run with the owner's or group's permissions, even if the user running the program is not the owner or a member of the group. The most common reason for a SGID program is to enable users to perform functions (such as changing their password) that require root privileges.
+
+Rationale:
+
+There are valid reasons for SGID programs, but it is important to identify and review such programs to ensure they are legitimate. Review the files returned by the action in the audit section and check to see if system binaries have a different md5 checksum than what from the package. This is an indication that the binary may have been replaced.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.
+
+The owner of a file can set the file's permissions to run with the owner's or group's permissions, even if the user running the program is not the owner or a member of the group. The most common reason for a SGID program is to enable users to perform functions (such as changing their password) that require root privileges.","There are valid reasons for SGID programs, but it is important to identify and review such programs to ensure they are legitimate. Review the files returned by the action in the audit section and check to see if system binaries have a different md5 checksum than what from the package. This is an indication that the binary may have been replaced.
+
+NOTE: Nessus has provided the target output to assist in reviewing the benchmark to ensure target compliance.",,Ensure that no rogue SGID programs have been introduced into the system. Review the files returned by the action in the Audit section and confirm the integrity of these binaries.
+Access Controls,6.2.1 Ensure password fields are not empty,An account with an empty password field means that anybody may log in as that user without providing a password.,All accounts must have passwords or be locked to prevent the account from being used by an unauthorized user.,,"If any accounts in the '/etc/shadow' file do not have a password, run the following command to lock the account until it can be determined why it does not have a password:
+
+# passwd -l
+
+Also, check to see if the account is logged in and investigate what it is being used for to determine if it needs to be forced off."
+Access Controls,6.2.2 Ensure no legacy '+' entries exist in /etc/passwd,"The character + in various files used to be markers for systems to insert data from NIS maps at a certain point in a system configuration file. These entries are no longer required on most systems, but may exist in files that have been imported from other platforms.",These entries may provide an avenue for attackers to gain privileged access on the system.,,Remove any legacy '+' entries from '/etc/passwd' if they exist.
+Access Controls,6.2.5 Ensure root is the only UID 0 account,Any account with UID 0 has superuser privileges on the system.,This access must be limited to only the default 'root' account and only from the system console. Administrative access must be through an unprivileged account using an approved mechanism as noted in Item 5.6 Ensure access to the su command is restricted.,,Remove any users other than 'root' with UID '0' or assign them a new UID if appropriate.
+Access Controls,6.2.6 Ensure root PATH Integrity,The 'root' user can execute any command on the system and could be fooled into executing programs unintentionally if the 'PATH' is not set correctly.,Including the current working directory (.) or other writable directory in 'root' 's executable path makes it likely that an attacker can gain superuser access by forcing an administrator operating as 'root' to execute a Trojan horse program.,,Correct or justify any items discovered in the Audit step.
+Access Controls,6.2.7 Ensure all users' home directories exist,Users can be defined in '/etc/passwd' without a home directory or with a home directory that does not actually exist.,"If the user's home directory does not exist or is unassigned, the user will be placed in '/' and will not be able to write any files or have local environment variables set.",,"If any users' home directories do not exist, create them and make sure the respective user owns the directory. Users without an assigned home directory should be removed or assigned a home directory as appropriate."
+Access Controls,6.2.8 Ensure users' home directories permissions are 750 or more restrictive,"While the system administrator can establish secure permissions for users' home directories, the users can easily override these.",Group or world-writable user home directories may enable malicious users to steal or modify other users' data or to gain another user's system privileges.,,"Making global modifications to user home directories without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user file permissions and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.9 Ensure users own their home directories,The user home directory is space defined for the particular user to set local environment variables and to store personal files.,"Since the user is accountable for files stored in the user home directory, the user must be the owner of the directory.",,Change the ownership of any home directories that are not owned by the defined user to the correct user.
+Access Controls,6.2.10 Ensure users' dot files are not group or world writable,"While the system administrator can establish secure permissions for users' 'dot' files, the users can easily override these.",Group or world-writable user configuration files may enable malicious users to steal or modify other users' data or to gain another user's system privileges.,,"Making global modifications to users' files without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user dot file permissions and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.11 Ensure no users have .forward files,The '.forward' file specifies an email address to forward the user's mail to.,Use of the '.forward' file poses a security risk in that sensitive data may be inadvertently transferred outside the organization. The '.forward' file also poses a risk as it can be used to execute commands that may perform unintended actions.,,"Making global modifications to users' files without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user '.forward' files and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.12 Ensure no users have .netrc files,The '.netrc' file contains data for logging into a remote host for file transfers via FTP.,"The '.netrc' file presents a significant security risk since it stores passwords in unencrypted form. Even if FTP is disabled, user accounts may have brought over '.netrc' files from other systems which could pose a risk to those systems.",,"Making global modifications to users' files without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user '.netrc' files and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.13 Ensure users' .netrc Files are not group or world accessible,"While the system administrator can establish secure permissions for users' '.netrc' files, the users can easily override these.",'.netrc' files may contain unencrypted passwords that may be used to attack other systems.,,"Making global modifications to users' files without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user '.netrc' file permissions and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.14 Ensure no users have .rhosts files,"While no '.rhosts' files are shipped by default, users can easily create them.","This action is only meaningful if '.rhosts' support is permitted in the file '/etc/pam.conf' . Even though the '.rhosts' files are ineffective if support is disabled in '/etc/pam.conf' , they may have been brought over from other systems and could contain information useful to an attacker for those other systems.",,"Making global modifications to users' files without alerting the user community can result in unexpected outages and unhappy users. Therefore, it is recommended that a monitoring policy be established to report user '.rhosts' files and determine the action to be taken in accordance with site policy."
+Access Controls,6.2.15 Ensure all groups in /etc/passwd exist in /etc/group,"Over time, system administration errors and changes can lead to groups being defined in '/etc/passwd' but not in '/etc/group' .",Groups defined in the '/etc/passwd' file but not in the '/etc/group' file pose a threat to system security since group permissions are not properly managed.,,Analyze the output of the Audit step above and perform the appropriate action to correct any discrepancies found.
+Access Controls,6.2.16 Ensure no duplicate UIDs exist,"Although the 'useradd' program will not let you create a duplicate User ID (UID), it is possible for an administrator to manually edit the '/etc/passwd' file and change the UID field.",Users must be assigned unique UIDs for accountability and to ensure appropriate access protections.,,"Based on the results of the audit script, establish unique UIDs and review all files owned by the shared UIDs to determine which UID they are supposed to belong to."
+Access Controls,6.2.17 Ensure no duplicate GIDs exist,"Although the 'groupadd' program will not let you create a duplicate Group ID (GID), it is possible for an administrator to manually edit the '/etc/group' file and change the GID field.",User groups must be assigned unique GIDs for accountability and to ensure appropriate access protections.,,"Based on the results of the audit script, establish unique GIDs and review all files owned by the shared GID to determine which group they are supposed to belong to."
+Access Controls,6.2.18 Ensure no duplicate user names exist,"Although the 'useradd' program will not let you create a duplicate user name, it is possible for an administrator to manually edit the '/etc/passwd' file and change the user name.","If a user is assigned a duplicate user name, it will create and have access to files with the first UID for that username in '/etc/passwd' . For example, if 'test4' has a UID of 1000 and a subsequent 'test4' entry has a UID of 2000, logging in as 'test4' will use UID 1000. Effectively, the UID is shared, which is a security problem.",,"Based on the results of the audit script, establish unique user names for the users. File ownerships will automatically reflect the change as long as the users have unique UIDs."
+Access Controls,6.2.19 Ensure no duplicate group names exist,"Although the 'groupadd' program will not let you create a duplicate group name, it is possible for an administrator to manually edit the '/etc/group' file and change the group name.","If a group is assigned a duplicate group name, it will create and have access to files with the first GID for that group in '/etc/group' . Effectively, the GID is shared, which is a security problem.",,"Based on the results of the audit script, establish unique names for the user groups. File group ownerships will automatically reflect the change as long as the groups have unique GIDs."
